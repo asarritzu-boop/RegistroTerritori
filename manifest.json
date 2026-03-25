@@ -1,0 +1,21 @@
+{
+  "short_name": "Registro",
+  "name": "Registro Percorrenza Territori",
+  "icons": [
+    {
+      "src": "icona-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "icona-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#B0C4DE",
+  "background_color": "#ffffff"
+}
+json
