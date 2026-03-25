@@ -4,21 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Registro Territori</title>
-    
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#B0C4DE">
-    <link rel="icon" type="image/png" href="icona-192.png">
-    <link rel="apple-touch-icon" href="icona-192.png">
 
-    <meta property="og:title" content="Registro Territori">
-    <meta property="og:image" content="icona-512.png">
-    <meta property="og:type" content="website">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Registro Territori">
-<meta name="twitter:description" content="Gestione e consultazione dei territori per la predicazione.">
-<meta name="twitter:image" content="https://asarritzu-boop.github.io/RegistroTerritori/icona-512.png">
+<meta name="theme-color" content="#B0C4DE">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 
+<link rel="icon" type="image/png" href="icona-192.png">
+<link rel="apple-touch-icon" href="icona-192.png">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Registro Percorrenza Territori">
+<meta property="og:description" content="Gestione e consultazione dei territori.">
+<meta property="og:url" content="https://asarritzu-boop.github.io/RegistroTerritori/">
+<meta property="og:image" content="icona-512.png">
+<meta property="og:image:width" content="512">
+<meta property="og:image:height" content="512">
+    
     <style>
+
         :root {
             --primary-bg: #B0C4DE;
             --dark-blue: #1F3A52;
@@ -207,14 +210,16 @@
                 }
             }
         }
-
-        // Registrazione Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                .catch(err => console.log('Errore SW:', err));
-            });
-        }
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => console.log('Service Worker registrato!', reg))
+        .catch(err => console.log('Errore SW:', err));
+    });
+  }
+</script>a
+        
     </script>
 </body>
 </html>
