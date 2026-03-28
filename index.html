@@ -1,0 +1,2911 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Registro Territori</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#B0C4DE">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="icon" type="image/png" href="icona-192.png">
+    <link rel="apple-touch-icon" href="icona-192.png">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Registro Percorrenza Territori">
+    <meta property="og:description" content="Gestione e consultazione dei territori.">
+    <meta property="og:url" content="https://asarritzu-boop.github.io/RegistroTerritori/">
+    <meta property="og:image" content="https://asarritzu-boop.github.io/RegistroTerritori/icona-512.png">
+    <meta property="og:image:width" content="512">
+    <meta property="og:image:height" content="512">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:alt" content="Registro Territori">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Registro Territori">
+    <meta name="twitter:description" content="Gestione e consultazione dei territori per la predicazione.">
+    <meta name="twitter:image" content="https://asarritzu-boop.github.io/RegistroTerritori/icona-512.png">
+
+    <!-- jsPDF for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script type="module" id="firebase-init">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+           sendPasswordResetEmail, onAuthStateChanged, signOut, deleteUser }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, doc, setDoc, getDoc, deleteDoc }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBFhtoaR2ULdAOC6vJH-GMFRxWWGcy4SwI",
+    authDomain: "territori-c8bf5.firebaseapp.com",
+    projectId: "territori-c8bf5",
+    storageBucket: "territori-c8bf5.firebasestorage.app",
+    messagingSenderId: "1059220468252",
+    appId: "1:1059220468252:web:d8c0dbff23aa24974d65d9"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  // Espone al resto dell'app (script classico)
+  window._fbAuth = auth;
+  window._fbDb   = db;
+  window._fbFns  = {
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    sendPasswordResetEmail,
+    onAuthStateChanged,
+    signOut,
+    deleteUser,
+    doc, setDoc, getDoc, deleteDoc
+  };
+</script>
+
+    <style>
+        :root {
+            --primary-bg: #B0C4DE;
+            --dark-blue: #1F3A52;
+            --white: #ffffff;
+            --shadow: 0 4px 6px rgba(0,0,0,0.1);
+            --danger: #d9534f;
+            --warning: #e67e22;
+            --success: #27ae60;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--dark-blue);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .menu-container {
+            position: absolute;
+            left: 20px;
+        }
+
+        .menu-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--dark-blue);
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 40px;
+            left: 0;
+            background-color: var(--white);
+            min-width: 180px;
+            box-shadow: var(--shadow);
+            border-radius: 8px;
+            z-index: 1000;
+            overflow: hidden;
+        }
+
+        .dropdown-menu a {
+            color: #1F3A52;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+
+        .dropdown-menu a.danger { color: var(--danger); }
+        .dropdown-menu a:hover { background-color: #f1f1f1; }
+        .dropdown-menu a:last-child { border-bottom: none; }
+
+        .menu-icon {
+            font-size: 1.0rem;
+            width: 25px;
+            text-align: center;
+        }
+
+        .show { display: block !important; }
+
+        .action-bar {
+            width: 90%;
+            max-width: 600px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            padding: 10px;
+        }
+
+        .btn-main {
+            background-color: var(--dark-blue);
+            color: var(--white);
+            border: none;
+            padding: 15px 10px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.1s, background-color 0.2s;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .btn-main:active { transform: scale(0.95); background-color: #2c5273; }
+
+        @media (min-width: 768px) {
+            h1 { font-size: 2rem; }
+            .btn-main:hover { background-color: #2c5273; }
+        }
+
+        main {
+            width: 90%;
+            max-width: 800px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        /* ===== MODALI ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .modal-overlay.show { display: flex; align-items: flex-start; justify-content: center; }
+
+        .modal-box {
+            background: var(--white);
+            border-radius: 14px;
+            width: 100%;
+            max-width: 900px;
+            margin: 10px auto;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            background: var(--dark-blue);
+            color: var(--white);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--white);
+            font-size: 1.5rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .modal-body { padding: 20px; }
+
+        /* ===== FORM AGGIUNGI TERRITORIO ===== */
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus { border-color: var(--dark-blue); }
+
+        .btn-save {
+            background: var(--dark-blue);
+            color: var(--white);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        /* ===== REGISTRO TERRITORI ===== */
+        /* Toolbar registro: riga 1 = anno + PDF, riga 2 = cerca + filtri */
+        .registro-toolbar {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .registro-toolbar-row1 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .registro-toolbar-row2 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-pdf {
+            background: var(--dark-blue);
+            color: var(--white);
+            border: none;
+            padding: 7px 13px;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn-pdf:hover { background: #2c5273; }
+
+        .search-input-wrap {
+            flex: 1;
+            position: relative;
+        }
+
+        .search-input-wrap input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-input-wrap input:focus { border-color: var(--dark-blue); }
+
+        .btn-filtri-toggle {
+            background: var(--dark-blue);
+            color: var(--white);
+            border: none;
+            padding: 8px 13px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            line-height: 1;
+            white-space: nowrap;
+            transition: background 0.2s;
+        }
+
+        .btn-filtri-toggle:hover { background: #2c5273; }
+
+        /* Pannello filtri avanzati collassabile */
+        .filtri-panel {
+            display: none;
+            background: #f8fafc;
+            border: 1.5px solid #d0dce8;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 4px;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filtri-panel.show { display: flex; }
+
+        .filtri-panel-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .rdrop-filtro-group {
+            flex: 1;
+            min-width: 140px;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .rdrop-filtro-group label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--dark-blue);
+        }
+
+        .rdrop-filtro-group input,
+        .rdrop-filtro-group select {
+            padding: 6px 10px;
+            border: 1.5px solid #ccc;
+            border-radius: 7px;
+            font-size: 0.85rem;
+            background: white;
+            outline: none;
+            width: 100%;
+        }
+
+        .rdrop-filtro-group input:focus,
+        .rdrop-filtro-group select:focus { border-color: var(--dark-blue); }
+
+        .btn-reset-filtri {
+            background: #888;
+            color: white;
+            border: none;
+            padding: 7px 14px;
+            border-radius: 7px;
+            font-size: 0.82rem;
+            cursor: pointer;
+            align-self: flex-end;
+            white-space: nowrap;
+        }
+
+        .btn-reset-filtri:hover { background: #555; }
+
+        /* Stili non più necessari ma mantenuti per compatibilità */
+        .registro-menu-container { position: relative; }
+        .btn-registro-menu { display: none; }
+        .registro-dropdown-menu { display: none !important; }
+        .rdrop-section-title { display: none; }
+        .rdrop-item { display: none; }
+        .rdrop-sep { display: none; }
+
+        .filtri-risultati {
+            font-size: 0.78rem;
+            color: #666;
+            margin-bottom: 8px;
+            font-style: italic;
+        }
+
+        .territory-card {
+            background: #f4f8fc;
+            border: 1px solid #d0dce8;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+
+        .territory-card.overdue {
+            border-color: var(--danger);
+            background: #fff5f5;
+        }
+
+        .territory-card-header {
+            background: var(--dark-blue);
+            color: var(--white);
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .territory-card.overdue .territory-card-header {
+            background: var(--danger);
+        }
+
+        .territory-card-title {
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .territory-card-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-icon {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: var(--white);
+            padding: 4px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .btn-icon:hover { background: rgba(255,255,255,0.35); }
+        .btn-icon.del { background: rgba(220,50,50,0.5); }
+
+        .territory-card-body { padding: 10px 15px; }
+
+        .assegnazioni-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82rem;
+        }
+
+        .assegnazioni-table th {
+            background: #dde8f0;
+            padding: 6px 8px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--dark-blue);
+        }
+
+        .assegnazioni-table td {
+            padding: 6px 8px;
+            border-bottom: 1px solid #e8eef4;
+        }
+
+        .assegnazioni-table tr:last-child td { border-bottom: none; }
+
+        .badge-overdue {
+            background: var(--danger);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .btn-add-assegnazione {
+            background: var(--success);
+            color: var(--white);
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.82rem;
+            margin-top: 8px;
+        }
+
+        /* ===== STATISTICHE ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 12px;
+        }
+
+        .stat-card {
+            background: #f4f8fc;
+            border: 1px solid #d0dce8;
+            border-radius: 10px;
+            padding: 14px;
+            text-align: left;
+        }
+
+        .stat-card.overdue-stat {
+            border-color: var(--danger);
+            background: #fff5f5;
+        }
+
+        .stat-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 0.95rem;
+            color: var(--dark-blue);
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.82rem;
+            padding: 3px 0;
+            border-bottom: 1px solid #e0e8f0;
+        }
+
+        .stat-row:last-child { border-bottom: none; }
+
+        .stat-val {
+            font-weight: bold;
+            color: var(--dark-blue);
+        }
+
+        .overdue-label {
+            color: var(--danger);
+            font-weight: bold;
+            font-size: 0.78rem;
+            margin-top: 6px;
+            display: block;
+        }
+
+        /* ===== MODALE ASSEGNAZIONE ===== */
+        .assegna-form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        /* ===== MODALE MODIFICA TERRITORIO ===== */
+        .edit-inline {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .edit-inline input {
+            flex: 1;
+            padding: 6px 10px;
+            border: 2px solid #ccc;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        /* ===== ANNO DI SERVIZIO ===== */
+        .anno-servizio-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .anno-servizio-bar select {
+            padding: 6px 10px;
+            border: 2px solid #ccc;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            width: 140px;
+            background: white;
+            cursor: pointer;
+        }
+
+        /* ===== EDIT ASSEGNAZIONE INLINE ===== */
+        .assegnazioni-table td input {
+            width: 100%;
+            padding: 3px 5px;
+            border: 1px solid #aaa;
+            border-radius: 4px;
+            font-size: 0.82rem;
+        }
+
+        /* ===== SEZIONI CITTÀ (accordion) ===== */
+        .citta-section { margin-bottom: 18px; }
+
+        .citta-section-header {
+            background: var(--dark-blue);
+            color: var(--white);
+            padding: 10px 16px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+            font-weight: bold;
+            font-size: 0.95rem;
+            letter-spacing: 0.5px;
+        }
+
+        .citta-section-header:hover { background: #2c5273; }
+
+        .citta-section-header .citta-toggle {
+            font-size: 1.1rem;
+            transition: transform 0.2s;
+        }
+
+        .citta-section-header.collapsed .citta-toggle { transform: rotate(-90deg); }
+
+        .citta-section-body {
+            margin-top: 8px;
+            display: block;
+        }
+
+        .citta-section-body.collapsed { display: none; }
+
+        .citta-count {
+            font-size: 0.78rem;
+            font-weight: normal;
+            opacity: 0.8;
+            margin-left: 8px;
+        }
+
+        /* Print styles for PDF preview */
+        @media print {
+            body { background: white; }
+        }
+
+/* ===== DASHBOARD INIZIALE ===== */
+.dashboard-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+    margin-bottom: 30px;
+    text-align: left;
+}
+
+.dash-panel {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: var(--shadow);
+    border: 1px solid #d0dce8;
+}
+
+.dash-panel h2 {
+    margin: 0 0 12px 0;
+    font-size: 1.05rem;
+    color: var(--dark-blue);
+    border-bottom: 2px solid #eee;
+    padding-bottom: 8px;
+}
+
+.dash-stat {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #f4f8fc;
+    font-size: 0.9rem;
+}
+
+.dash-stat:last-child { border-bottom: none; }
+.dash-stat strong { font-size: 1rem; color: var(--dark-blue); }
+
+.dash-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.dash-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid #f4f8fc;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dash-list li:last-child { border-bottom: none; }
+
+.text-danger { color: var(--danger); font-weight: bold; font-size: 0.8rem; background: #fff5f5; padding: 3px 8px; border-radius: 6px; }
+.text-warning { color: var(--warning); font-weight: bold; font-size: 0.8rem; background: #fff8eb; padding: 3px 8px; border-radius: 6px; }
+
+/* ===== LOGIN / REGISTRAZIONE ===== */
+#login-screen {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: var(--primary-bg);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+#login-screen.show {
+    display: flex !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.login-box {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 32px 28px;
+    width: 90%;
+    max-width: 380px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+    text-align: center;
+}
+
+.login-box h2 {
+    margin: 0 0 24px 0;
+    font-size: 1.3rem;
+    color: var(--dark-blue);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.login-box .form-group { margin-bottom: 14px; text-align: left; }
+.login-box .form-group label { font-weight: 600; font-size: 0.85rem; margin-bottom: 4px; display: block; }
+
+.pwd-wrap { position: relative; }
+.pwd-wrap input { padding-right: 44px; }
+.pwd-toggle {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    color: #888;
+    padding: 0;
+}
+
+.login-box .btn-save { margin-top: 8px; }
+
+.login-tabs {
+    display: flex;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid var(--dark-blue);
+}
+
+.login-tab {
+    flex: 1;
+    padding: 9px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--dark-blue);
+    transition: background 0.2s;
+}
+
+.login-tab.active { background: var(--dark-blue); color: white; }
+
+.login-link {
+    display: block;
+    margin-top: 14px;
+    font-size: 0.82rem;
+    color: var(--dark-blue);
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.login-error {
+    color: var(--danger);
+    font-size: 0.82rem;
+    margin-top: 10px;
+    min-height: 18px;
+}
+
+/* Badge utente in header */
+#user-badge {
+    position: absolute;
+    right: 20px;
+    font-size: 0.75rem;
+    color: var(--dark-blue);
+    font-weight: 600;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Indicatore sync */
+#sync-indicator {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    background: var(--dark-blue);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    display: none;
+    z-index: 5000;
+    box-shadow: var(--shadow);
+}
+    </style>
+</head>
+<body>
+
+<!-- ===== SCHERMATA LOGIN ===== -->
+<div id="login-screen" class="show">
+    <div class="login-box">
+        <h2>🗺️ Registro Territori</h2>
+        <div class="login-tabs">
+            <button class="login-tab active" id="tab-login" onclick="switchTab('login')">Accedi</button>
+            <button class="login-tab" id="tab-reg" onclick="switchTab('registra')">Registrati</button>
+        </div>
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="login-email" placeholder="email@esempio.it" autocomplete="email" />
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <div class="pwd-wrap">
+                <input type="password" id="login-pwd" placeholder="Password" autocomplete="current-password" />
+                <button class="pwd-toggle" onclick="togglePwd('login-pwd', this)" tabindex="-1">👁️</button>
+            </div>
+        </div>
+        <button class="btn-save" onclick="eseguiAuth()">Accedi</button>
+        <span class="login-link" onclick="passwordDimenticata()">Password dimenticata?</span>
+        <div class="login-error" id="login-error"></div>
+    </div>
+</div>
+
+<!-- Badge utente in header -->
+<div id="user-badge"></div>
+
+<!-- Indicatore sincronizzazione -->
+<div id="sync-indicator">☁️ Salvataggio…</div>
+
+    <header>
+        <div class="menu-container">
+            <button class="menu-btn" onclick="toggleMenu()" aria-label="Menu">☰</button>
+            <div id="myDropdown" class="dropdown-menu">
+    <a onclick="esportaBackup()"><span class="menu-icon">📤</span> Esporta Backup</a>
+    <a onclick="importaBackup()"><span class="menu-icon">📥</span> Importa Backup</a>
+    <hr style="margin:0;border:0;border-top:1px solid #eee;">
+    <a onclick="salvaCloud()"><span class="menu-icon">☁️</span> Salva su Cloud</a>
+    <a onclick="ripristinaCloud()"><span class="menu-icon">🔄</span> Ripristina da Cloud</a>
+    <hr style="margin:0;border:0;border-top:1px solid #eee;">
+    <a onclick="eseguiLogout()" class="danger"><span class="menu-icon">🚪</span> Logout</a>
+    <a onclick="eliminaUtente()" class="danger"><span class="menu-icon">👤</span> Elimina account</a>
+    <hr style="margin:0;border:0;border-top:1px solid #eee;">
+    <a onclick="eliminaTutti()" class="danger"><span class="menu-icon">🗑️</span> Elimina tutti i dati</a>
+</div>
+        </div>
+        <h1>Registro Territori</h1>
+        <span id="user-badge-header" style="position:absolute;right:20px;font-size:0.72rem;color:var(--dark-blue);font-weight:600;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+    </header>
+
+    <nav class="action-bar">
+        <button class="btn-main" onclick="apriAggiuntaTerritorio()">+ Territorio</button>
+        <button class="btn-main" onclick="apriStatistiche()">Statistiche</button>
+        <button class="btn-main" onclick="apriRegistro()">Registro</button>
+    </nav>
+
+    <main id="main-content"></main>
+
+    <!-- ===== MODALE: AGGIUNGI TERRITORIO ===== -->
+    <div id="modal-aggiungi" class="modal-overlay">
+        <div class="modal-box" style="max-width:400px">
+            <div class="modal-header">
+                <h2>➕ Nuovo Territorio</h2>
+                <button class="modal-close" onclick="chiudiModale('modal-aggiungi')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Numero Territorio</label>
+                    <input type="text" id="inp-terr-num" placeholder="" />
+                </div>
+                <div class="form-group">
+                    <label>Nome / Descrizione</label>
+                    <input type="text" id="inp-terr-nome" placeholder="" />
+                </div>
+                <div class="form-group">
+                    <label>Città</label>
+                    <input type="text" id="inp-terr-citta" placeholder="" />
+                </div>
+                <button class="btn-save" onclick="salvaTerritorio()">Salva Territorio</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODALE: REGISTRO ===== -->
+    <div id="modal-registro" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2>📋 Registro Territori</h2>
+                <button class="modal-close" onclick="chiudiModale('modal-registro')">✕</button>
+            </div>
+            <div class="modal-body">
+                <!-- TOOLBAR: riga 1 = anno + PDF, riga 2 = cerca + filtri -->
+                <div class="registro-toolbar">
+                    <!-- Riga 1: Anno di servizio + pulsanti PDF -->
+                    <div class="registro-toolbar-row1">
+                        <div class="anno-servizio-bar">
+                            <label>Anno di Servizio:</label>
+                            <select id="anno-servizio" onchange="onAnnoServizioChange()"></select>
+                        </div>
+                        <button class="btn-pdf" onclick="generaPDF()">🖨️ PDF Completo</button>
+                        <button class="btn-pdf" onclick="generaPDFCitta()">🏙️ PDF per Città</button>
+                    </div>
+                    <!-- Riga 2: Barra di ricerca + freccia filtri -->
+                    <div class="registro-toolbar-row2">
+                        <div class="search-input-wrap">
+                            <input type="text" id="filtro-testo" placeholder="Cerca nome, via, città..." oninput="renderRegistro()" />
+                        </div>
+                        <button class="btn-filtri-toggle" onclick="toggleFiltriPanel()" title="Filtri avanzati">⚙️ ▾</button>
+                    </div>
+                    <!-- Pannello filtri avanzati (collassato di default) -->
+                    <div id="filtri-panel" class="filtri-panel">
+                        <div class="filtri-panel-row">
+                            <div class="rdrop-filtro-group">
+                                <label>🏙️ Città</label>
+                                <select id="filtro-citta" onchange="renderRegistro()">
+                                    <option value="">Tutte le città</option>
+                                </select>
+                            </div>
+                            <div class="rdrop-filtro-group">
+                                <label>⏱ Non lavorato da (mesi)</label>
+                                <div style="display:flex;gap:6px;align-items:center">
+                                    <input type="number" id="filtro-tempo-mesi" placeholder="es. 6" min="1" style="width:80px;padding:6px 8px;border:1.5px solid #ccc;border-radius:7px;font-size:0.85rem;" oninput="renderRegistro()" />
+                                    <span style="font-size:0.8rem;color:#666">mesi</span>
+                                </div>
+                                <label style="margin-top:6px;display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:normal;">
+                                    <input type="checkbox" id="filtro-mai" onchange="renderRegistro()" style="width:auto;" /> Mai lavorati
+                                </label>
+                            </div>
+                            <div class="rdrop-filtro-group">
+                                <label>📋 Ordina per</label>
+                                <select id="filtro-ordine" onchange="renderRegistro()">
+                                    <option value="numero">Numero territorio</option>
+                                    <option value="meno_lavorato">Assegn da più tempo</option>
+                                    <option value="piu_lavorato">Assegno da meno tempo</option>
+                                    <option value="in_corso">In corso (non restituiti)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <button class="btn-reset-filtri" onclick="resetFiltri()">✕ Reset filtri</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="filtri-risultati-info" class="filtri-risultati"></div>
+
+                <div id="registro-contenuto"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODALE: STATISTICHE ===== -->
+    <div id="modal-statistiche" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2>📊 Statistiche Territori</h2>
+                <button class="modal-close" onclick="chiudiModale('modal-statistiche')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div id="statistiche-contenuto"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODALE: AGGIUNGI/MODIFICA ASSEGNAZIONE ===== -->
+    <div id="modal-assegnazione" class="modal-overlay">
+        <div class="modal-box" style="max-width:450px">
+            <div class="modal-header">
+                <h2 id="modal-assegna-titolo">📌 Assegnazione</h2>
+                <button class="modal-close" onclick="chiudiModale('modal-assegnazione')">✕</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="assegna-terr-id" />
+                <input type="hidden" id="assegna-idx" value="-1" />
+                <div class="assegna-form-row">
+                    <div class="form-group">
+                        <label>Assegnato a</label>
+                        <input type="text" id="assegna-a" placeholder="Nome predicatore" />
+                    </div>
+                    <div class="form-group">
+                        <label>Data Assegnazione</label>
+                        <input type="date" id="assegna-data" />
+                    </div>
+                </div>
+                <div class="assegna-form-row">
+                    <div class="form-group">
+                        <label>Data Restituzione (opz.)</label>
+                        <input type="date" id="assegna-rest" />
+                    </div>
+                    <div></div>
+                </div>
+                <button class="btn-save" onclick="salvaAssegnazione()">Salva</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Input nascosto per importa backup -->
+    <input type="file" id="import-file" accept=".json" style="display:none" onchange="leggiBackup(event)" />
+
+    <script>
+        // ============================================================
+//  FIREBASE AUTH & CLOUD
+// ============================================================
+let _currentUser = null;
+let _autoSaveTimeout = null;
+const CLOUD_DOC_PATH = uid => ['utenti', uid, 'dati', 'registro'];
+
+function waitForFb(cb, attempts = 0) {
+    if (window._fbAuth && window._fbFns) { cb(); return; }
+    if (attempts > 40) { console.warn('Firebase non disponibile'); return; }
+    setTimeout(() => waitForFb(cb, attempts + 1), 100);
+}
+
+// Inizializza Firebase e ascolta stato auth
+waitForFb(() => {
+    const { onAuthStateChanged } = window._fbFns;
+    onAuthStateChanged(window._fbAuth, async (user) => {
+        if (user) {
+            _currentUser = user;
+            nascondiLogin();
+            aggiornaUserBadge(user.email);
+            await ripristinaCloudSilenzioso();
+            renderDashboard();
+        } else {
+            _currentUser = null;
+            mostraLogin();
+            aggiornaUserBadge('');
+        }
+    });
+});
+
+function mostraLogin() {
+    document.getElementById('login-screen').classList.add('show');
+}
+
+function nascondiLogin() {
+    document.getElementById('login-screen').classList.remove('show');
+}
+
+function aggiornaUserBadge(email) {
+    const el = document.getElementById('user-badge-header');
+    if (el) el.textContent = email ? '👤 ' + email.split('@')[0] : '';
+}
+
+// Mostra/nascondi password
+function togglePwd(inputId, btn) {
+    const inp = document.getElementById(inputId);
+    if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+    else { inp.type = 'password'; btn.textContent = '👁️'; }
+}
+
+// Switcha tab Login / Registrati
+function switchTab(tab) {
+    const isLogin = tab === 'login';
+    document.getElementById('tab-login').classList.toggle('active', isLogin);
+    document.getElementById('tab-reg').classList.toggle('active', !isLogin);
+    document.getElementById('login-error').textContent = '';
+    const btn = document.querySelector('#login-screen .btn-save');
+    btn.textContent = isLogin ? 'Accedi' : 'Registrati';
+    btn.onclick = isLogin ? eseguiAuth : eseguiRegistrazione;
+    const pwdInput = document.getElementById('login-pwd');
+    pwdInput.autocomplete = isLogin ? 'current-password' : 'new-password';
+}
+
+// Esegui login
+async function eseguiAuth() {
+    const email = document.getElementById('login-email').value.trim();
+    const pwd   = document.getElementById('login-pwd').value;
+    const errEl = document.getElementById('login-error');
+    errEl.textContent = '';
+    if (!email || !pwd) { errEl.textContent = 'Inserisci email e password.'; return; }
+    try {
+        const { signInWithEmailAndPassword } = window._fbFns;
+        await signInWithEmailAndPassword(window._fbAuth, email, pwd);
+    } catch(e) {
+        errEl.textContent = tradErrore(e.code);
+    }
+}
+
+// Esegui registrazione
+async function eseguiRegistrazione() {
+    const email = document.getElementById('login-email').value.trim();
+    const pwd   = document.getElementById('login-pwd').value;
+    const errEl = document.getElementById('login-error');
+    errEl.textContent = '';
+    if (!email || !pwd) { errEl.textContent = 'Inserisci email e password.'; return; }
+    if (pwd.length < 6) { errEl.textContent = 'La password deve avere almeno 6 caratteri.'; return; }
+    try {
+        const { createUserWithEmailAndPassword } = window._fbFns;
+        await createUserWithEmailAndPassword(window._fbAuth, email, pwd);
+    } catch(e) {
+        errEl.textContent = tradErrore(e.code);
+    }
+}
+
+// Password dimenticata
+async function passwordDimenticata() {
+    const email = document.getElementById('login-email').value.trim();
+    if (!email) { document.getElementById('login-error').textContent = 'Inserisci prima la tua email.'; return; }
+    try {
+        const { sendPasswordResetEmail } = window._fbFns;
+        await sendPasswordResetEmail(window._fbAuth, email);
+        document.getElementById('login-error').style.color = 'var(--success)';
+        document.getElementById('login-error').textContent = 'Email di recupero inviata!';
+    } catch(e) {
+        document.getElementById('login-error').style.color = 'var(--danger)';
+        document.getElementById('login-error').textContent = tradErrore(e.code);
+    }
+}
+
+// Logout
+async function eseguiLogout() {
+    if (!confirm('Eseguire il logout?')) return;
+    const { signOut } = window._fbFns;
+    await signOut(window._fbAuth);
+    toggleMenu();
+}
+
+// Elimina account utente
+async function eliminaUtente() {
+    if (!_currentUser) return;
+    if (!confirm('Eliminare definitivamente il tuo account e tutti i dati Cloud? Questa azione è irreversibile.')) return;
+    try {
+        const { deleteUser, doc, deleteDoc } = window._fbFns;
+        const ref = doc(window._fbDb, ..._cloudDocPath(_currentUser.uid));
+        await deleteDoc(ref);
+        await deleteUser(_currentUser);
+        alert('Account eliminato.');
+    } catch(e) {
+        alert('Errore: ' + e.message + '\n\nSe l\'errore persiste, effettua logout e login prima di eliminare l\'account.');
+    }
+}
+
+function _cloudDocPath(uid) { return ['utenti', uid, 'dati', 'registro']; }
+
+// Salva su Cloud (manuale)
+async function salvaCloud() {
+    if (!_currentUser) { alert('Devi essere connesso.'); return; }
+    await _salvaCloudInterno(true);
+    toggleMenu();
+}
+
+// Salva su Cloud (interno, silent o con alert)
+async function _salvaCloudInterno(mostraFeedback = false) {
+    if (!_currentUser || !window._fbFns) return;
+    try {
+        mostraIndicatorSync(true);
+        const { doc, setDoc } = window._fbFns;
+        const dati = caricaDati();
+        const ref = doc(window._fbDb, ..._cloudDocPath(_currentUser.uid));
+        await setDoc(ref, { payload: JSON.stringify(dati), ts: Date.now() });
+        if (mostraFeedback) alert('✅ Dati salvati su Cloud!');
+    } catch(e) {
+        if (mostraFeedback) alert('Errore salvataggio Cloud: ' + e.message);
+    } finally {
+        mostraIndicatorSync(false);
+    }
+}
+
+// Ripristina da Cloud (manuale)
+async function ripristinaCloud() {
+    if (!_currentUser) { alert('Devi essere connesso.'); return; }
+    if (!confirm('Ripristinare i dati dal Cloud? I dati locali verranno sostituiti.')) return;
+    await _ripristinaCloudInterno(true);
+    toggleMenu();
+}
+
+// Ripristina da Cloud (automatico al login, senza conferma)
+async function ripristinaCloudSilenzioso() {
+    await _ripristinaCloudInterno(false);
+}
+
+async function _ripristinaCloudInterno(mostraFeedback = false) {
+    if (!_currentUser || !window._fbFns) return;
+    try {
+        mostraIndicatorSync(true);
+        const { doc, getDoc } = window._fbFns;
+        const ref = doc(window._fbDb, ..._cloudDocPath(_currentUser.uid));
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+            const dati = JSON.parse(snap.data().payload);
+            if (Array.isArray(dati.territori)) {
+                salvaDati(dati);
+                if (mostraFeedback) alert('✅ Dati ripristinati dal Cloud!');
+            }
+        } else {
+            if (mostraFeedback) alert('Nessun dato trovato sul Cloud.');
+        }
+    } catch(e) {
+        if (mostraFeedback) alert('Errore ripristino Cloud: ' + e.message);
+    } finally {
+        mostraIndicatorSync(false);
+    }
+}
+
+// Salvataggio automatico con debounce (chiamato ad ogni modifica)
+function autoSalvaCloud() {
+    if (!_currentUser) return;
+    clearTimeout(_autoSaveTimeout);
+    _autoSaveTimeout = setTimeout(() => _salvaCloudInterno(false), 2000);
+}
+
+function mostraIndicatorSync(attivo) {
+    const el = document.getElementById('sync-indicator');
+    if (el) el.style.display = attivo ? 'block' : 'none';
+}
+
+// Traduzione errori Firebase
+function tradErrore(code) {
+    const map = {
+        'auth/invalid-email': 'Email non valida.',
+        'auth/user-not-found': 'Utente non trovato.',
+        'auth/wrong-password': 'Password errata.',
+        'auth/invalid-credential': 'Email o password errati.',
+        'auth/email-already-in-use': 'Email già registrata.',
+        'auth/weak-password': 'Password troppo debole (min. 6 caratteri).',
+        'auth/too-many-requests': 'Troppi tentativi. Riprova tra qualche minuto.',
+        'auth/network-request-failed': 'Errore di rete. Controlla la connessione.',
+    };
+    return map[code] || ('Errore: ' + code);
+}
+
+    // ============================================================
+    //  STORAGE
+    // ============================================================
+    const STORAGE_KEY = 'registroTerritori_v1';
+
+    function caricaDati() {
+        try {
+            return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { territori: [], annoServizio: '' };
+        } catch(e) { return { territori: [], annoServizio: '' }; }
+    }
+
+    function salvaDati(dati) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(dati));
+    autoSalvaCloud();
+}
+
+    // ============================================================
+    //  UTILS ANNO DI SERVIZIO
+    // ============================================================
+
+    // Ritorna l'anno di servizio corrente come stringa "YYYY/YYYY+1"
+    function calcolaAnnoServizioCorrente() {
+        const oggi = new Date();
+        const mese = oggi.getMonth(); // 0=gen ... 8=set
+        const anno = oggi.getFullYear();
+        const inizio = mese >= 8 ? anno : anno - 1;
+        return inizio + '/' + (inizio + 1);
+    }
+
+    // Ritorna { dal: Date, al: Date } per un anno di servizio "YYYY/YYYY+1"
+    function limiteAnnoServizio(annoStr) {
+        const inizio = parseInt(annoStr.split('/')[0]);
+        return {
+            dal: new Date(inizio, 8, 1),
+            al:  new Date(inizio + 1, 7, 31, 23, 59, 59)
+        };
+    }
+
+    // Calcola gli anni da mostrare nel select in base alle ultime 5 assegnazioni di ogni territorio.
+    // Regola: se per TUTTI i territori le ultime 5 assegnazioni sono da settembre in poi
+    // dell'anno corrente → mostra solo anno corrente.
+    // Altrimenti mostra anche l'anno precedente (e tutti gli anni storici presenti).
+    function calcolaAnniDaMostrare(territori) {
+        const annoCorrente = calcolaAnnoServizioCorrente();
+        const oggi = new Date();
+        const meseOggi = oggi.getMonth();
+        const annoOggi = oggi.getFullYear();
+        const inizioAnnoCorrente = meseOggi >= 8 ? annoOggi : annoOggi - 1;
+        const settembreCorrente = new Date(inizioAnnoCorrente, 8, 1);
+
+        const anniSet = new Set();
+        anniSet.add(annoCorrente);
+
+        // Controlla se esiste almeno un territorio con assegnazioni prima di settembre corrente
+        let esistePrecedente = false;
+        territori.forEach(t => {
+            const tutte = [...t.assegnazioni].sort((a, b) => new Date(a.assegnato) - new Date(b.assegnato));
+            const ultime5 = tutte.slice(-5);
+            ultime5.forEach(a => {
+                if (a.assegnato) {
+                    const d = new Date(a.assegnato);
+                    if (d < settembreCorrente) {
+                        esistePrecedente = true;
+                        const m = d.getMonth();
+                        const y = d.getFullYear();
+                        const inizio = m >= 8 ? y : y - 1;
+                        anniSet.add(inizio + '/' + (inizio + 1));
+                    }
+                }
+            });
+        });
+
+        // Aggiungi tutti gli anni storici presenti in tutte le assegnazioni
+        territori.forEach(t => {
+            t.assegnazioni.forEach(a => {
+                if (a.assegnato) {
+                    const d = new Date(a.assegnato);
+                    const m = d.getMonth();
+                    const y = d.getFullYear();
+                    const inizio = m >= 8 ? y : y - 1;
+                    anniSet.add(inizio + '/' + (inizio + 1));
+                }
+            });
+        });
+
+        return [...anniSet].sort((a, b) => parseInt(b.split('/')[0]) - parseInt(a.split('/')[0]));
+    }
+
+    // Calcola l'anno da mostrare nel PDF per un insieme di assegnazioni (ultime 5)
+    function calcolaAnnoPerTerritorio(ass5) {
+        if (!ass5 || ass5.length === 0) return calcolaAnnoServizioCorrente();
+        const date = ass5.map(a => a.assegnato).filter(Boolean).map(d => new Date(d));
+        if (date.length === 0) return calcolaAnnoServizioCorrente();
+
+        const oggi = new Date();
+        const meseOggi = oggi.getMonth();
+        const annoOggi = oggi.getFullYear();
+        const inizioAnnoCorrente = meseOggi >= 8 ? annoOggi : annoOggi - 1;
+        const settembreCorrente = new Date(inizioAnnoCorrente, 8, 1);
+
+        const tutteNellAnnoCorrente = date.every(d => d >= settembreCorrente);
+        if (tutteNellAnnoCorrente) {
+            return inizioAnnoCorrente + '/' + (inizioAnnoCorrente + 1);
+        } else {
+            date.sort((a, b) => a - b);
+            const oldest = date[0];
+            const mOld = oldest.getMonth();
+            const yOld = oldest.getFullYear();
+            const inizioVecchio = mOld >= 8 ? yOld : yOld - 1;
+            if (inizioVecchio === inizioAnnoCorrente) {
+                return inizioAnnoCorrente + '/' + (inizioAnnoCorrente + 1);
+            }
+            return inizioVecchio + '/' + (inizioVecchio + 1) + ' \u2013 ' + inizioAnnoCorrente + '/' + (inizioAnnoCorrente + 1);
+        }
+    }
+
+    function toggleFiltriPanel() {
+        document.getElementById('filtri-panel').classList.toggle('show');
+    }
+
+    function toggleRegistroMenu(e) {
+        e.stopPropagation();
+        document.getElementById('registro-dropdown') && document.getElementById('registro-dropdown').classList.toggle('show');
+    }
+
+    function chiudiRegistroMenu() {
+        document.getElementById('registro-dropdown') && document.getElementById('registro-dropdown').classList.remove('show');
+    }
+
+    // ============================================================
+    //  MENU HAMBURGER
+    // ============================================================
+    function toggleMenu() {
+        document.getElementById('myDropdown').classList.toggle('show');
+    }
+
+    window.onclick = function(e) {
+        if (!e.target.matches('.menu-btn')) {
+            document.querySelectorAll('.dropdown-menu').forEach(d => d.classList.remove('show'));
+        }
+    };
+
+    // ============================================================
+    //  MODALI
+    // ============================================================
+    function apriModale(id) { document.getElementById(id).classList.add('show'); }
+    function chiudiModale(id) { document.getElementById(id).classList.remove('show'); }
+
+    // Chiudi modale cliccando overlay
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', function(e) {
+            if (e.target === this) this.classList.remove('show');
+        });
+    });
+
+    // ============================================================
+    //  AGGIUNGI TERRITORIO
+    // ============================================================
+    function apriAggiuntaTerritorio() {
+        document.getElementById('inp-terr-num').value = '';
+        document.getElementById('inp-terr-nome').value = '';
+        document.getElementById('inp-terr-citta').value = '';
+        apriModale('modal-aggiungi');
+        setTimeout(() => document.getElementById('inp-terr-num').focus(), 200);
+    }
+
+    function salvaTerritorio() {
+    // 1. Recupero i valori usando i tuoi ID esatti
+    const elNum = document.getElementById('inp-terr-num');
+    const elNome = document.getElementById('inp-terr-nome');
+    const elCitta = document.getElementById('inp-terr-citta');
+
+    if (!elNum || !elNome || !elCitta) {
+        console.error("Errore: Uno o più campi non trovati nel DOM.");
+        return;
+    }
+
+    const numero = elNum.value.trim();
+    const nome = elNome.value.trim();
+    const citta = elCitta.value.trim();
+
+    // 2. Validazione minima
+    if (!numero) {
+        alert('Inserire il numero del territorio.');
+        return;
+    }
+    if (!citta) {
+        alert('Inserire la città.');
+        return;
+    }
+
+    const dati = caricaDati();
+
+    // 3. CONTROLLO UNIVOCITÀ (Numero + Città)
+    // Controlla se esiste già un territorio con lo STESSO NUMERO nella STESSA CITTÀ
+    const esiste = dati.territori.find(t => 
+        t.numero === numero && 
+        (t.citta || "").toLowerCase() === citta.toLowerCase()
+    );
+
+    if (esiste) {
+        alert(`Il territorio numero ${numero} per la città "${citta}" esiste già.`);
+        return;
+    }
+
+    // 4. Creazione nuovo oggetto
+    const nuovo = {
+        id: Date.now().toString(),
+        numero: numero,
+        nome: nome,   // Descrizione della zona
+        citta: citta, // Comune/Città
+        note: '',
+        assegnazioni: []
+    };
+
+    dati.territori.push(nuovo);
+
+    // 5. ORDINAMENTO: Prima per Città, poi per Numero
+    dati.territori.sort((a, b) => {
+        const cittaA = (a.citta || "").toLowerCase();
+        const cittaB = (b.citta || "").toLowerCase();
+        if (cittaA < cittaB) return -1;
+        if (cittaA > cittaB) return 1;
+        return parseInt(a.numero) - parseInt(b.numero);
+    });
+    
+    // 6. Salvataggio e aggiornamento UI
+    salvaDati(dati);
+    renderRegistro();
+    
+    // Aggiorna la dashboard se esiste la funzione
+    if (typeof renderDashboard === "function") {
+        renderDashboard();
+    }
+    
+    // Chiudi e resetta
+    chiudiModale('modal-aggiungi');
+    elNum.value = '';
+    elNome.value = '';
+    elCitta.value = '';
+}
+// ============================================================
+//  DASHBOARD INIZIALE
+// ============================================================
+function renderDashboard() {
+    const dati = caricaDati();
+    const container = document.getElementById('main-content');
+    
+    if (!dati.territori || dati.territori.length === 0) {
+        container.innerHTML = '<p style="text-align:center;color:#888;margin-top:40px;">Nessun territorio registrato. Usa "+ Territorio" per iniziare.</p>';
+        return;
+    }
+
+    const oggi = new Date();
+    // Calcolo le date limite
+    const unAnnoFa = new Date(); unAnnoFa.setFullYear(oggi.getFullYear() - 1);
+    const quattroMesiFa = new Date(); quattroMesiFa.setMonth(oggi.getMonth() - 4);
+    const seiMesiFa = new Date(); seiMesiFa.setMonth(oggi.getMonth() - 6);
+
+    // Contatori per Display 1
+    let totTerritori = dati.territori.length;
+    let totInCorso = 0;
+    let totLavoratiAnno = 0;
+
+    // Array per Display 2 e 3
+    let disp2 = []; // Oltre 4 mesi (assegnati)
+    let disp3 = []; // Oltre 6 mesi (fermi)
+
+    dati.territori.forEach(t => {
+        let isInCorso = false;
+        let lavoratoUltimoAnno = false;
+        let hasOverdue = null;
+        
+        // Cerca l'ultima data di restituzione nota (partendo eventualmente da quella vecchia salvata)
+        let maxRestituito = t.ultimaRestituzione ? new Date(t.ultimaRestituzione) : null;
+
+        t.assegnazioni.forEach(a => {
+            const dAss = a.assegnato ? new Date(a.assegnato) : null;
+            const dRest = a.restituito ? new Date(a.restituito) : null;
+
+            // Display 1 & 2 logic
+            if (dAss && !dRest) {
+                isInCorso = true;
+                if (dAss < quattroMesiFa) {
+                    const mesi = Math.floor((oggi - dAss) / (1000 * 60 * 60 * 24 * 30));
+                    hasOverdue = { persona: a.persona, dataAss: dAss, mesi: mesi };
+                }
+            }
+
+            // Display 1: Lavorati ultimo anno
+            if (dAss && dRest && dRest >= unAnnoFa) {
+                lavoratoUltimoAnno = true;
+            }
+
+            // Trova la data di restituzione più recente per il Display 3
+            if (dRest) {
+                if (!maxRestituito || dRest > maxRestituito) {
+                    maxRestituito = dRest;
+                }
+            }
+        });
+
+        if (isInCorso) totInCorso++;
+        if (lavoratoUltimoAnno) totLavoratiAnno++;
+
+        // Aggiungi a Display 2
+        if (hasOverdue) {
+            disp2.push({ terr: t, overdue: hasOverdue });
+        }
+
+        // Aggiungi a Display 3: Non è in corso, E l'ultima restituzione risale a > 6 mesi fa
+        if (!isInCorso && maxRestituito && maxRestituito <= seiMesiFa) {
+            const mesiFermi = Math.floor((oggi - maxRestituito) / (1000 * 60 * 60 * 24 * 30));
+            disp3.push({ terr: t, dataRest: maxRestituito, mesi: mesiFermi });
+        }
+    });
+
+    // Ordinamenti richiesti
+    // Display 2: Dalla data di assegnazione più lontana
+    disp2.sort((a, b) => a.overdue.dataAss - b.overdue.dataAss);
+    // Display 3: Distanza temporale maggiore (la data più vecchia per prima)
+    disp3.sort((a, b) => a.dataRest - b.dataRest);
+
+    // Costruzione HTML
+    let html = '<div class="dashboard-container">';
+
+    // --- DISPLAY 1 ---
+    html += `
+    <div class="dash-panel">
+        <h2>📊 Riepilogo Generale</h2>
+        <div class="dash-stat"><span>Territori registrati:</span> <strong>${totTerritori}</strong></div>
+        <div class="dash-stat"><span>Attualmente assegnati (da restituire):</span> <strong>${totInCorso}</strong></div>
+        <div class="dash-stat"><span>Lavorati e restituiti nell'ultimo anno:</span> <strong>${totLavoratiAnno}</strong></div>
+    </div>`;
+
+    // --- DISPLAY 2 ---
+    html += `
+    <div class="dash-panel">
+        <h2>⚠️ Da restituire (Oltre 4 mesi)</h2>
+        ${disp2.length > 0 ? `<ul class="dash-list">
+            ${disp2.map(item => `
+                <li>
+                    <span>N. <strong>${item.terr.numero}</strong>${item.terr.citta ? ' <span style="opacity:0.6;font-size:0.75rem;">['+escHtml(item.terr.citta)+']</span>' : ''} - ${escHtml(item.overdue.persona)}</span>
+                    <span class="text-danger">Assegnato da ${item.overdue.mesi} mesi</span>
+                </li>
+            `).join('')}
+        </ul>` : '<p style="font-size:0.85rem; color:#27ae60; margin:0;">Nessun territorio in ritardo.</p>'}
+    </div>`;
+
+    // --- DISPLAY 3 ---
+    html += `
+    <div class="dash-panel">
+        <h2>⏳ Fermi da lavorare (Oltre 6 mesi)</h2>
+        ${disp3.length > 0 ? `<ul class="dash-list">
+            ${disp3.map(item => `
+                <li>
+                    <span>N. <strong>${item.terr.numero}</strong>${item.terr.citta ? ` <span style="opacity:0.6;font-size:0.75rem;">[${escHtml(item.terr.citta)}]</span>` : ''}${item.terr.nome ? ` <span style="opacity:0.6;font-size:0.75rem;">(${escHtml(item.terr.nome)})</span>` : ''}</span>
+                    <span class="text-warning">Fermo da ${item.mesi} mesi</span>
+                </li>
+            `).join('')}
+        </ul>` : '<p style="font-size:0.85rem; margin:0;">Tutti i territori liberi sono stati lavorati di recente.</p>'}
+    </div>`;
+
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+    // ============================================================
+    //  REGISTRO — apertura e selezione anno
+    // ============================================================
+    function apriRegistro() {
+        const dati = caricaDati();
+        const annoCorrente = calcolaAnnoServizioCorrente();
+
+        // Calcola anni da mostrare in base alla regola delle ultime 5 assegnazioni
+        const anni = calcolaAnniDaMostrare(dati.territori);
+
+        const sel = document.getElementById('anno-servizio');
+        sel.innerHTML = anni.map(a => `<option value="${a}">${a.split('/')[1] || a}</option>`).join('');
+
+        const annoSalvato = dati.annoServizio;
+        sel.value = (annoSalvato && anni.includes(annoSalvato)) ? annoSalvato : annoCorrente;
+
+        if (!annoSalvato || dati.annoServizio !== sel.value) {
+            dati.annoServizio = sel.value;
+            salvaDati(dati);
+        }
+
+        // Popola select città filtro
+        popolaFiltroCitta(dati);
+
+        renderRegistro();
+        apriModale('modal-registro');
+    }
+
+    function onAnnoServizioChange() {
+        const dati = caricaDati();
+        dati.annoServizio = document.getElementById('anno-servizio').value;
+        salvaDati(dati);
+        renderRegistro();
+    }
+
+    // Popola il select città nella barra filtri
+    function popolaFiltroCitta(dati) {
+        const citta = [...new Set(dati.territori.map(t => t.citta || '').filter(Boolean))].sort((a, b) => a.localeCompare(b, 'it'));
+        const sel = document.getElementById('filtro-citta');
+        sel.innerHTML = '<option value="">Tutte le città</option>' +
+            citta.map(c => `<option value="${escHtml(c)}">${escHtml(c)}</option>`).join('');
+    }
+
+    function resetFiltri() {
+        document.getElementById('filtro-testo').value = '';
+        document.getElementById('filtro-citta').value = '';
+        document.getElementById('filtro-tempo-mesi').value = '';
+        document.getElementById('filtro-mai').checked = false;
+        document.getElementById('filtro-ordine').value = 'numero';
+        renderRegistro();
+    }
+
+    // ============================================================
+    //  REGISTRO — render con filtri e anno
+    // ============================================================
+    function renderRegistro() {
+        const dati = caricaDati();
+        const contenuto = document.getElementById('registro-contenuto');
+
+        if (dati.territori.length === 0) {
+            contenuto.innerHTML = '<p style="text-align:center;color:#888">Nessun territorio. Usa "+ Territorio" per aggiungerne.</p>';
+            document.getElementById('filtri-risultati-info').textContent = '';
+            return;
+        }
+
+        // --- Legge filtri ---
+        const annoSel = document.getElementById('anno-servizio') ? document.getElementById('anno-servizio').value : '';
+        const testoFiltro = (document.getElementById('filtro-testo').value || '').trim().toLowerCase();
+        const cittaFiltro = (document.getElementById('filtro-citta').value || '').trim();
+        const tempoMesiInput = document.getElementById('filtro-tempo-mesi').value;
+        const filtroMai = document.getElementById('filtro-mai').checked;
+        const tempoFiltro = filtroMai ? 'mai' : (tempoMesiInput ? parseFloat(tempoMesiInput) : null);
+        const ordineFiltro = document.getElementById('filtro-ordine').value || 'numero';
+
+        // --- Limiti anno di servizio ---
+        const { dal, al } = annoSel ? limiteAnnoServizio(annoSel) : { dal: null, al: null };
+
+        // --- Costruisce versioni filtrate per anno ---
+        let territoriAnno = dati.territori.map(t => {
+            const assFiltered = dal
+                ? t.assegnazioni.filter(a => {
+                    if (!a.assegnato) return false;
+                    const d = new Date(a.assegnato);
+                    return d >= dal && d <= al;
+                })
+                : t.assegnazioni;
+            return { ...t, assegnazioni: assFiltered };
+        });
+
+        const oggi = new Date();
+
+        // Helper: giorni dall'ultima restituzione (o dall'ultima assegnazione se non restituita)
+        function giorniUltimaAttivita(t) {
+            if (t.assegnazioni.length === 0) return Infinity;
+            // Data più recente tra assegnato e restituito
+            let maxDate = null;
+            t.assegnazioni.forEach(a => {
+                const dr = a.restituito ? new Date(a.restituito) : null;
+                const da = a.assegnato ? new Date(a.assegnato) : null;
+                const d = dr || da;
+                if (d && (!maxDate || d > maxDate)) maxDate = d;
+            });
+            if (!maxDate) return Infinity;
+            return (oggi - maxDate) / (1000 * 60 * 60 * 24);
+        }
+
+        // Helper: mesi dall'ultima restituzione (territorio attualmente libero)
+        function mesiLibero(t) {
+            // Cerca se ha un'assegnazione aperta (non restituita)
+            const aperta = t.assegnazioni.find(a => !a.restituito && a.assegnato);
+            if (aperta) return 0; // è in corso, non è "libero"
+            if (t.assegnazioni.length === 0) return Infinity;
+            // Data dell'ultima restituzione
+            let lastRest = null;
+            t.assegnazioni.forEach(a => {
+                if (a.restituito) {
+                    const d = new Date(a.restituito);
+                    if (!lastRest || d > lastRest) lastRest = d;
+                }
+            });
+            if (!lastRest) return Infinity;
+            return (oggi - lastRest) / (1000 * 60 * 60 * 24 * 30);
+        }
+
+        // --- Applica filtro testo (cerca in nome, numero, città, nomi assegnatari) ---
+        // Tiene traccia delle assegnazioni che matchano per ciascun territorio
+        let testoMatchMap = {}; // terrId -> array di assegnazioni che matchano
+        if (testoFiltro) {
+            territoriAnno = territoriAnno.filter(t => {
+                const infoBase = (t.numero + ' ' + (t.nome || '') + ' ' + (t.citta || '')).toLowerCase();
+                if (infoBase.includes(testoFiltro)) {
+                    // Il territorio stesso matcha: mostra tutte le assegnazioni filtrate per anno
+                    testoMatchMap[t.id] = null; // null = mostra tutte
+                    return true;
+                }
+                // Cerca nei nomi degli assegnatari
+                const matchingAss = t.assegnazioni.filter(a => (a.persona || '').toLowerCase().includes(testoFiltro));
+                if (matchingAss.length > 0) {
+                    testoMatchMap[t.id] = matchingAss;
+                    return true;
+                }
+                return false;
+            });
+        }
+
+        // --- Applica filtro città ---
+        if (cittaFiltro) {
+            territoriAnno = territoriAnno.filter(t => (t.citta || '') === cittaFiltro);
+        }
+
+        // --- Applica filtro tempo senza lavorare ---
+        if (tempoFiltro !== null) {
+            territoriAnno = territoriAnno.filter(t => {
+                if (tempoFiltro === 'mai') return t.assegnazioni.length === 0;
+                const mesi = parseFloat(tempoFiltro);
+                return mesiLibero(t) > mesi;
+            });
+        }
+
+        // --- Applica ordinamento ---
+        if (ordineFiltro === 'meno_lavorato') {
+            territoriAnno.sort((a, b) => giorniUltimaAttivita(b) - giorniUltimaAttivita(a));
+        } else if (ordineFiltro === 'piu_lavorato') {
+            territoriAnno.sort((a, b) => giorniUltimaAttivita(a) - giorniUltimaAttivita(b));
+        } else if (ordineFiltro === 'in_corso') {
+            territoriAnno = territoriAnno.filter(t =>
+                t.assegnazioni.some(a => !a.restituito && a.assegnato)
+            );
+            territoriAnno.sort((a, b) => giorniUltimaAttivita(a) - giorniUltimaAttivita(b));
+        } else {
+            // Default: ordine per numero
+            territoriAnno.sort((a, b) => {
+                const na = parseFloat(a.numero) || a.numero;
+                const nb = parseFloat(b.numero) || b.numero;
+                return na < nb ? -1 : na > nb ? 1 : 0;
+            });
+        }
+
+        // --- Info risultati ---
+        const infoEl = document.getElementById('filtri-risultati-info');
+        const totale = dati.territori.length;
+        const mostrati = territoriAnno.length;
+        const haFiltriAttivi = testoFiltro || cittaFiltro || tempoFiltro !== null || ordineFiltro !== 'numero';
+        if (haFiltriAttivi) {
+            infoEl.textContent = mostrati === totale
+                ? `Mostrati tutti i ${totale} territori`
+                : `Mostrati ${mostrati} di ${totale} territori`;
+        } else {
+            infoEl.textContent = '';
+        }
+
+        if (territoriAnno.length === 0) {
+            contenuto.innerHTML = '<p style="text-align:center;color:#888">Nessun territorio corrisponde ai filtri selezionati.</p>';
+            return;
+        }
+
+        const isAnnoCorrente = annoSel === calcolaAnnoServizioCorrente();
+
+        // Se c'è un ordine diverso da numero, non raggruppa per città (mostra flat)
+        if (ordineFiltro !== 'numero') {
+            contenuto.innerHTML = territoriAnno.map((t, idx) => renderTerrCard(t, idx + 1, isAnnoCorrente, testoFiltro ? testoMatchMap[t.id] : null, true)).join('');
+            return;
+        }
+
+        // Raggruppa per città (ordine alfabetico, senza città in fondo)
+        const cittaMap = {};
+        territoriAnno.forEach(t => {
+            const c = t.citta ? t.citta.trim() : '';
+            if (!cittaMap[c]) cittaMap[c] = [];
+            cittaMap[c].push(t);
+        });
+
+        const cittaKeys = Object.keys(cittaMap).sort((a, b) => {
+            if (a === '') return 1;
+            if (b === '') return -1;
+            return a.localeCompare(b, 'it');
+        });
+
+        contenuto.innerHTML = cittaKeys.map(citta => {
+            const gruppo = cittaMap[citta];
+            const label = citta || 'Senza città';
+            const sectionId = 'citta-section-' + (citta || '__nessuna__').replace(/\s+/g, '-');
+            const cittaEsc = escHtml(citta);
+            const cards = gruppo.map((t, idx) => renderTerrCard(t, idx + 1, isAnnoCorrente, testoFiltro ? testoMatchMap[t.id] : null)).join('');
+            return `
+            <div class="citta-section">
+                <div class="citta-section-header collapsed" onclick="toggleCittaSection('${sectionId}', this)">
+                    <span>🏙️ ${escHtml(label)} <span class="citta-count">(${gruppo.length} terr.)</span></span>
+                    <span style="display:flex;gap:6px;align-items:center;">
+                        <button class="btn-icon" onclick="event.stopPropagation();rinominaCitta('${cittaEsc}')">✏️</button>
+                        <button class="btn-icon del" onclick="event.stopPropagation();eliminaCitta('${cittaEsc}')">🗑</button>
+                        <span class="citta-toggle">▼</span>
+                    </span>
+                </div>
+                <div class="citta-section-body collapsed" id="${sectionId}">
+                    ${cards}
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function toggleCittaSection(sectionId, header) {
+        const body = document.getElementById(sectionId);
+        const isCollapsed = body.classList.toggle('collapsed');
+        header.classList.toggle('collapsed', isCollapsed);
+    }
+
+function rinominaCitta(vecchiaCitta) {
+        const nuova = prompt('Nuovo nome per la città "' + vecchiaCitta + '":', vecchiaCitta);
+        if (!nuova || nuova.trim() === '' || nuova.trim() === vecchiaCitta) return;
+        const dati = caricaDati();
+        dati.territori.forEach(t => {
+            if ((t.citta || '') === vecchiaCitta) t.citta = nuova.trim();
+        });
+        salvaDati(dati);
+        popolaFiltroCitta(dati);
+        renderRegistro();
+    }
+
+    function eliminaCitta(nomeCitta) {
+        const dati = caricaDati();
+        const n = dati.territori.filter(t => (t.citta || '') === nomeCitta).length;
+        if (!confirm('Eliminare la città "' + nomeCitta + '" e tutti i suoi ' + n + ' territori? L\'operazione è irreversibile.')) return;
+        dati.territori = dati.territori.filter(t => (t.citta || '') !== nomeCitta);
+        salvaDati(dati);
+        popolaFiltroCitta(dati);
+        renderRegistro();
+        if (typeof renderDashboard === 'function') renderDashboard();
+    }
+    
+    function isScaduto(terr) {
+        const oggi = new Date();
+        for (const a of terr.assegnazioni) {
+            if (!a.restituito && a.assegnato) {
+                const d = new Date(a.assegnato);
+                const mesi = (oggi - d) / (1000 * 60 * 60 * 24 * 30);
+                if (mesi > 4) return true;
+            }
+        }
+        return false;
+    }
+
+    function renderTerrCard(t, numLocale, isAnnoCorrente, filteredAss, showCitta = false) {
+        const scaduto = isScaduto(t);
+        const scadClass = scaduto ? 'overdue' : '';
+        const badge = scaduto ? '<span class="badge-overdue">⚠ Oltre 4 mesi</span>' : '';
+        // Se filteredAss è un array, mostriamo solo quelle righe; null = tutte
+        const assegnazioniDaMonstrare = filteredAss !== undefined && filteredAss !== null
+            ? filteredAss
+            : [...t.assegnazioni].sort((a, b) => new Date(b.assegnato) - new Date(a.assegnato));
+        const assegnazioniOrdinate = filteredAss !== undefined && filteredAss !== null
+            ? [...filteredAss].sort((a, b) => new Date(b.assegnato) - new Date(a.assegnato))
+            : [...t.assegnazioni].sort((a, b) => new Date(b.assegnato) - new Date(a.assegnato));
+        const rows = assegnazioniOrdinate.map((a) => {
+            // Trova l'indice originale nell'array t.assegnazioni per edit/delete
+            const origIdx = t.assegnazioni.findIndex(x => x === a || (x.assegnato === a.assegnato && x.persona === a.persona));
+            return `
+            <tr>
+                <td>${escHtml(a.persona || '')}</td>
+                <td>${formatData(a.assegnato)}</td>
+                <td>${formatData(a.restituito)}</td>
+                <td>
+                    <button class="btn-icon" onclick="apriModificaAssegnazione('${t.id}', ${origIdx})">✏️</button>
+                    <button class="btn-icon del" onclick="eliminaAssegnazione('${t.id}', ${origIdx})">🗑</button>
+                </td>
+            </tr>`;
+        }).join('');
+
+        // Il pulsante "aggiungi" appare solo per l'anno corrente
+        const btnAggiungi = (isAnnoCorrente !== false)
+            ? `<button class="btn-add-assegnazione" onclick="apriNuovaAssegnazione('${t.id}')">+ Aggiungi Assegnazione</button>`
+            : `<p style="font-size:0.78rem;color:#aaa;margin-top:6px">Visualizzazione anno storico</p>`;
+
+        return `
+        <div class="territory-card ${scadClass}" id="card-${t.id}">
+            <div class="territory-card-header">
+                <span class="territory-card-title">
+                    ${numLocale ? '<span style="opacity:0.6;font-size:0.82rem;margin-right:4px">' + numLocale + '.</span>' : ''}N. ${escHtml(t.numero)}${t.nome ? ' – ' + escHtml(t.nome) : ''}${showCitta && t.citta ? ' <span style="opacity:0.6;font-size:0.8rem;">[' + escHtml(t.citta) + ']</span>' : ''} ${badge}
+                </span>
+                <div class="territory-card-actions">
+                    <button class="btn-icon" onclick="apriModificaTerritorio('${t.id}')">✏️ Modifica</button>
+                    <button class="btn-icon del" onclick="eliminaTerritorio('${t.id}')">🗑 Elimina</button>
+                </div>
+            </div>
+            <div class="territory-card-body">
+                ${t.ultimaRestituzione ? `<p style="font-size:0.8rem;margin:0 0 8px 0;color:#666">Ultima restituzione precedente: <strong>${formatData(t.ultimaRestituzione)}</strong></p>` : ''}
+                ${assegnazioniOrdinate.length > 0 ? `
+                <table class="assegnazioni-table">
+                    <thead><tr><th>Assegnato a</th><th>Assegnato il</th><th>Restituito il</th><th></th></tr></thead>
+                    <tbody>${rows}</tbody>
+                </table>` : '<p style="font-size:0.82rem;color:#888;margin:0">Nessuna assegnazione registrata.</p>'}
+                ${btnAggiungi}
+            </div>
+        </div>`;
+    }
+
+    // ============================================================
+    //  MODIFICA TERRITORIO
+    // ============================================================
+    function apriModificaTerritorio(id) {
+        const dati = caricaDati();
+        const t = dati.territori.find(x => x.id === id);
+        if (!t) return;
+        const nuovoNum = prompt('Numero territorio:', t.numero);
+        if (nuovoNum === null) return;
+        const nuovoNome = prompt('Nome / descrizione:', t.nome);
+        if (nuovoNome === null) return;
+        const nuovaCitta = prompt('Città:', t.citta || '');
+        if (nuovaCitta === null) return;
+        const ultima = prompt('Ultima restituzione precedente (YYYY-MM-DD, opzionale):', t.ultimaRestituzione || '');
+        if (ultima === null) return;
+        t.numero = nuovoNum.trim();
+        t.nome = nuovoNome.trim();
+        t.citta = nuovaCitta.trim();
+        t.ultimaRestituzione = ultima.trim();
+        salvaDati(dati);
+        renderRegistro();
+    }
+
+    function eliminaTerritorio(id) {
+        if (!confirm('Eliminare questo territorio e tutte le sue assegnazioni?')) return;
+        const dati = caricaDati();
+        dati.territori = dati.territori.filter(t => t.id !== id);
+        salvaDati(dati);
+        renderRegistro();
+    }
+
+    // ============================================================
+    //  ASSEGNAZIONI
+    // ============================================================
+    function apriNuovaAssegnazione(terrId) {
+        document.getElementById('assegna-terr-id').value = terrId;
+        document.getElementById('assegna-idx').value = -1;
+        document.getElementById('assegna-a').value = '';
+        document.getElementById('assegna-data').value = todayISO();
+        document.getElementById('assegna-rest').value = '';
+        document.getElementById('modal-assegna-titolo').textContent = '📌 Nuova Assegnazione';
+        apriModale('modal-assegnazione');
+    }
+
+    function apriModificaAssegnazione(terrId, idx) {
+        const dati = caricaDati();
+        const t = dati.territori.find(x => x.id === terrId);
+        if (!t) return;
+        const a = t.assegnazioni[idx];
+        document.getElementById('assegna-terr-id').value = terrId;
+        document.getElementById('assegna-idx').value = idx;
+        document.getElementById('assegna-a').value = a.persona || '';
+        document.getElementById('assegna-data').value = a.assegnato || '';
+        document.getElementById('assegna-rest').value = a.restituito || '';
+        document.getElementById('modal-assegna-titolo').textContent = '✏️ Modifica Assegnazione';
+        apriModale('modal-assegnazione');
+    }
+
+    function salvaAssegnazione() {
+        const terrId = document.getElementById('assegna-terr-id').value;
+        const idx = parseInt(document.getElementById('assegna-idx').value);
+        const persona = document.getElementById('assegna-a').value.trim();
+        const assegnato = document.getElementById('assegna-data').value;
+        const restituito = document.getElementById('assegna-rest').value;
+
+        if (!persona || !assegnato) { alert('Inserisci almeno il nome e la data di assegnazione.'); return; }
+
+        const dati = caricaDati();
+        const t = dati.territori.find(x => x.id === terrId);
+        if (!t) return;
+
+        // Controlla se la data è già usata (escludi la riga in modifica)
+        const dataGiaUsata = t.assegnazioni.some((a, i) => {
+            if (idx !== -1 && i === idx) return false;
+            return a.assegnato === assegnato;
+        });
+        if (dataGiaUsata) {
+            alert('⚠️ Esiste già un\'assegnazione con la data del ' + formatData(assegnato) + ' per questo territorio. Scegli una data diversa.');
+            return;
+        }
+
+        const entry = { persona, assegnato, restituito };
+        if (idx === -1) {
+            t.assegnazioni.push(entry);
+        } else {
+            t.assegnazioni[idx] = entry;
+        }
+        salvaDati(dati);
+        chiudiModale('modal-assegnazione');
+        renderRegistro();
+    }
+
+    function eliminaAssegnazione(terrId, idx) {
+        if (!confirm('Eliminare questa assegnazione?')) return;
+        const dati = caricaDati();
+        const t = dati.territori.find(x => x.id === terrId);
+        if (!t) return;
+        t.assegnazioni.splice(idx, 1);
+        salvaDati(dati);
+        renderRegistro();
+    }
+
+    // ============================================================
+    //  STATISTICHE
+    // ============================================================
+    function apriStatistiche() {
+    const container = document.getElementById('main-content');
+    
+    // Inseriamo i selettori per il periodo e l'ordinamento
+    container.innerHTML = `
+        <div class="section-title">
+            <button class="btn-back" onclick="renderDashboard()">indietro</button>
+            <h1>Statistiche e Analisi</h1>
+        </div>
+<button class="btn-save no-print" onclick="generaPDFStatistiche()" style="background:var(--dark-blue); margin:0; box-shadow: var(--shadow);">🖨️ Scarica PDF</button>
+
+        <div class="dashboard-filters" style="background:#f0f4f8; padding:15px; border-radius:12px; margin-bottom:20px; box-shadow: var(--shadow);">
+            <h3 style="margin-top:0; font-size:1rem; color:var(--dark-blue);">⚙️ Filtri Analisi</h3>
+            <div style="display:flex; flex-wrap:wrap; gap:15px; align-items:flex-end;">
+                <div style="flex:1; min-width:120px;">
+                    <label style="font-size:0.8rem; display:block; margin-bottom:5px;">Periodo (mesi):</label>
+                    <input type="number" id="stat-periodo" value="12" min="1" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:6px;">
+                </div>
+                <div style="flex:2; min-width:180px;">
+                    <label style="font-size:0.8rem; display:block; margin-bottom:5px;">Ordina territori per:</label>
+                    <select id="stat-ordine" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:6px;">
+                        <option value="standard">Numero Territorio</option>
+                        <option value="velocita">Numero GG Percorrenza</option>
+                    </select>
+                </div>
+                <button class="btn-save" onclick="calcolaAnalisiAvanzata()" style="flex:1; height:38px; margin:0;">Aggiorna</button>
+            </div>
+        </div>
+
+        <div id="analisi-risultati">
+            </div>
+    `;
+
+    // Avviamo il calcolo iniziale
+    calcolaAnalisiAvanzata();
+}
+
+function calcolaAnalisiAvanzata() {
+    const dati = caricaDati();
+    const mesiRif = parseInt(document.getElementById('stat-periodo').value) || 12;
+    const ordine = document.getElementById('stat-ordine').value;
+    const container = document.getElementById('analisi-risultati');
+    
+    const oggi = new Date();
+    const dataLimite = new Date();
+    dataLimite.setMonth(oggi.getMonth() - mesiRif);
+
+    let reportTerritori = [];
+    let totaleAssegnazioniPeriodo = 0;
+    let territoriCoinvoltiCount = 0;
+
+    dati.territori.forEach(t => {
+        let conteggioCorrispondenze = 0;
+        let sommaGiorni = 0;
+        let recordPiuVeloce = Infinity;
+
+        t.assegnazioni.forEach(a => {
+            if (a.assegnato && a.restituito) {
+                const dAss = new Date(a.assegnato);
+                const dRest = new Date(a.restituito);
+
+                // Filtro per periodo di riferimento
+                if (dRest >= dataLimite) {
+                    conteggioCorrispondenze++;
+                    const giorni = Math.ceil((dRest - dAss) / (1000 * 60 * 60 * 24));
+                    sommaGiorni += giorni;
+                    if (giorni < recordPiuVeloce) recordPiuVeloce = giorni;
+                }
+            }
+        });
+
+        if (conteggioCorrispondenze > 0) {
+            totaleAssegnazioniPeriodo += conteggioCorrispondenze;
+            territoriCoinvoltiCount++;
+            reportTerritori.push({
+                numero: t.numero,
+                citta: t.citta || t.nome || '',
+                volte: conteggioCorrispondenze,
+                mediaGiorni: Math.round(sommaGiorni / conteggioCorrispondenze),
+                recordVeloce: recordPiuVeloce
+            });
+        }
+    });
+
+    // Ordinamento richiesto
+    if (ordine === 'velocita') {
+        reportTerritori.sort((a, b) => a.recordVeloce - b.recordVeloce);
+    } else {
+        reportTerritori.sort((a, b) => parseInt(a.numero) - parseInt(b.numero));
+    }
+
+    const mediaGen = territoriCoinvoltiCount > 0 ? (totaleAssegnazioniPeriodo / territoriCoinvoltiCount).toFixed(1) : 0;
+
+    container.innerHTML = `
+        <div class="dash-panel" style="margin-bottom:15px; border-left:5px solid var(--blue);">
+            <h2 style="font-size:0.9rem;">Riepilogo Medie (${mesiRif} mesi)</h2>
+            <div class="dash-stat"><span>Territori lavorati:</span> <strong>${territoriCoinvoltiCount} / ${dati.territori.length}</strong></div>
+            <div class="dash-stat"><span>Totale restituzioni:</span> <strong>${totaleAssegnazioniPeriodo}</strong></div>
+            <div class="dash-stat" style="color:var(--blue)"><span>Media percorrenza territorio:</span> <strong>${mediaGen}</strong></div>
+        </div>
+
+        <div class="dash-panel">
+            <h2 style="font-size:0.9rem;">Dettaglio Percorrenze</h2>
+            <table style="width:100%; font-size:0.8rem; border-collapse:collapse; margin-top:10px;">
+                <thead>
+                    <tr style="border-bottom:1px solid #eee; text-align:left; opacity:0.7;">
+                        <th>Terr.</th>
+                        <th style="text-align:center;">Volte</th>
+                        <th style="text-align:center;">Media GG</th>
+                        <th style="text-align:center;">Min GG</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${reportTerritori.map(r => `
+                        <tr style="border-bottom:1px solid #f9f9f9;">
+                            <td style="padding:10px 0;"><strong>${r.numero}</strong> <br><small>${r.citta}</small></td>
+                            <td style="text-align:center;">${r.volte}</td>
+                            <td style="text-align:center;">${r.mediaGiorni}</td>
+                            <td style="text-align:center; color:var(--success); font-weight:bold;">${r.recordVeloce}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
+// ============================================================
+//  GENERAZIONE PDF STATISTICHE (Programmatica via jsPDF)
+// ============================================================
+function generaPDFStatistiche() {
+    const { jsPDF } = window.jspdf;
+    // A4 verticale
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+    // Dimensioni e margini richiesti (15mm)
+    const m = 15; 
+    const wPagina = 210;
+    const hPagina = 297;
+    const wUtile = wPagina - 2 * m;
+    let y = m;
+
+    // Palette Colori
+    const colBluScuro = [31, 58, 82];    // Corrisponde a var(--dark-blue)
+    const colBianco = [255, 255, 255];
+    const colGrigioChiaro = [244, 248, 252]; // Per le righe alterne della tabella
+    const colTesto = [40, 40, 40];
+    const colVerde = [39, 174, 96];      // Corrisponde a var(--success)
+
+    // --- 1. Recupero e calcolo dati (stessa logica della UI) ---
+    const dati = caricaDati();
+    const inputPeriodo = document.getElementById('stat-periodo');
+    const mesiRif = inputPeriodo ? (parseInt(inputPeriodo.value) || 12) : 12;
+    const inputOrdine = document.getElementById('stat-ordine');
+    const ordine = inputOrdine ? inputOrdine.value : 'standard';
+
+    const oggi = new Date();
+    const dataLimite = new Date();
+    dataLimite.setMonth(oggi.getMonth() - mesiRif);
+
+    let reportTerritori = [];
+    let totaleAssegnazioniPeriodo = 0;
+    let territoriCoinvoltiCount = 0;
+
+    dati.territori.forEach(t => {
+        let conteggioCorrispondenze = 0;
+        let sommaGiorni = 0;
+        let recordPiuVeloce = Infinity;
+
+        t.assegnazioni.forEach(a => {
+            if (a.assegnato && a.restituito) {
+                const dAss = new Date(a.assegnato);
+                const dRest = new Date(a.restituito);
+                if (dRest >= dataLimite) {
+                    conteggioCorrispondenze++;
+                    const giorni = Math.ceil((dRest - dAss) / (1000 * 60 * 60 * 24));
+                    sommaGiorni += giorni;
+                    if (giorni < recordPiuVeloce) recordPiuVeloce = giorni;
+                }
+            }
+        });
+
+        if (conteggioCorrispondenze > 0) {
+            totaleAssegnazioniPeriodo += conteggioCorrispondenze;
+            territoriCoinvoltiCount++;
+            reportTerritori.push({
+                numero: t.numero,
+                citta: t.citta || t.nome || '',
+                volte: conteggioCorrispondenze,
+                mediaGiorni: Math.round(sommaGiorni / conteggioCorrispondenze),
+                recordVeloce: recordPiuVeloce
+            });
+        }
+    });
+
+    // Ordinamento
+    if (ordine === 'velocita') {
+        reportTerritori.sort((a, b) => a.recordVeloce - b.recordVeloce);
+    } else {
+        reportTerritori.sort((a, b) => parseInt(a.numero) - parseInt(b.numero));
+    }
+
+    const mediaGen = territoriCoinvoltiCount > 0 ? (totaleAssegnazioniPeriodo / territoriCoinvoltiCount).toFixed(1) : 0;
+
+    // --- 2. Disegno del PDF ---
+
+    // TITOLO: Sfondo blu, testo bianco, grassetto, maiuscolo
+    doc.setFillColor(...colBluScuro);
+    doc.rect(m, y, wUtile, 14, 'F');
+    doc.setTextColor(...colBianco);
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('STATISTICHE E ANALISI TERRITORI', wPagina / 2, y + 9, { align: 'center' });
+    y += 24;
+
+    // RIEPILOGO GENERALITÀ
+    doc.setTextColor(...colTesto);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Periodo di analisi: ultimi ${mesiRif} mesi`, m, y);
+    y += 7;
+    
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Territori lavorati: ${territoriCoinvoltiCount}   |   Totale restituzioni: ${totaleAssegnazioniPeriodo}   |   Media percorrenza: ${mediaGen}`, m, y);
+    y += 10;
+        // --- AGGIUNTA DICITURA DETTAGLIO ---
+    y += 3; // Spazio extra dal riepilogo sopra
+    doc.setFillColor(240, 240, 240); // Grigio molto tenue per il sottotitolo
+    doc.rect(m, y, wUtile, 8, 'F');
+    doc.setTextColor(...colBluScuro);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('DETTAGLIO PERCORRENZE', m + 3, y + 5.5);
+    y += 10; // Spazio prima dell'inizio della tabella
+    
+
+    // CONFIGURAZIONE TABELLA
+    const rowH = 9; // Altezza riga
+    const cols = [
+        { title: 'Territorio', x: m, w: 35, align: 'left' },
+        { title: 'Città', x: m + 35, w: 65, align: 'left' },
+        { title: 'Volte', x: m + 100, w: 25, align: 'center' },
+        { title: 'Media GG', x: m + 125, w: 30, align: 'center' },
+        { title: 'Min GG', x: m + 155, w: 25, align: 'center' }
+    ];
+
+    // Funzione helper per disegnare l'intestazione della tabella
+    function drawTableHeader() {
+        doc.setFillColor(220, 225, 230); // Grigio azzurrognolo
+        doc.rect(m, y, wUtile, rowH, 'F');
+        doc.setTextColor(30, 30, 30);
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        cols.forEach(c => {
+            let textX = c.x + (c.align === 'center' ? c.w / 2 : 3);
+            doc.text(c.title, textX, y + 6, { align: c.align === 'center' ? 'center' : 'left' });
+        });
+        y += rowH;
+    }
+
+    drawTableHeader();
+
+    // STAMPA RIGHE TABELLA
+    doc.setFontSize(9);
+
+    reportTerritori.forEach((r, index) => {
+        // Controllo fine pagina: se non c'è spazio, crea una nuova pagina
+        if (y + rowH > hPagina - m) {
+            doc.addPage();
+            y = m;
+            drawTableHeader();
+        }
+
+        // Sfondo alternato stile "zebra" per leggibilità
+        if (index % 2 === 0) {
+            doc.setFillColor(...colGrigioChiaro);
+            doc.rect(m, y, wUtile, rowH, 'F');
+        }
+
+        doc.setTextColor(...colTesto);
+        
+        // Colonna 1: Numero
+        doc.setFont('helvetica', 'bold');
+        doc.text(String(r.numero), cols[0].x + 3, y + 6);
+        doc.setFont('helvetica', 'normal');
+        
+        // Colonna 2: Città (troncata elegantemente se troppo lunga)
+        let cittaTxt = String(r.citta);
+        if (doc.getTextWidth(cittaTxt) > cols[1].w - 6) {
+            while (doc.getTextWidth(cittaTxt + '...') > cols[1].w - 6 && cittaTxt.length > 0) {
+                cittaTxt = cittaTxt.slice(0, -1);
+            }
+            cittaTxt += '...';
+        }
+        doc.text(cittaTxt, cols[1].x + 3, y + 6);
+
+        // Colonna 3: Volte
+        doc.text(String(r.volte), cols[2].x + cols[2].w / 2, y + 6, { align: 'center' });
+        
+        // Colonna 4: Media Giorni
+        doc.text(String(r.mediaGiorni), cols[3].x + cols[3].w / 2, y + 6, { align: 'center' });
+        
+        // Colonna 5: Record Veloce (Min GG) evidenziato in verde
+        doc.setTextColor(...colVerde);
+        doc.setFont('helvetica', 'bold');
+        doc.text(String(r.recordVeloce), cols[4].x + cols[4].w / 2, y + 6, { align: 'center' });
+        
+        y += rowH;
+    });
+
+    // FOOTER (Data di generazione in basso a destra)
+    const dataGen = new Date().toLocaleDateString('it-IT');
+    if (y + 10 > hPagina - m) {
+        doc.addPage();
+        y = m;
+    }
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(8);
+    doc.setTextColor(150, 150, 150);
+    doc.text(`Generato il ${dataGen}`, wPagina - m, y + 15, { align: 'right' });
+
+    // 3. Salvataggio del file
+    doc.save(`Statistiche_Territori_${mesiRif}mesi.pdf`);
+}
+
+
+
+    // ============================================================
+    //  GENERAZIONE PDF  (S-13-I identico al modulo originale)
+    // ============================================================
+    function generaPDF() {
+        // ============================================================
+        // S-13-I  —  Riproduzione fedele del modulo originale
+        // Foglio A4 verticale (210 × 297 mm)
+        //
+        // Struttura tabella (da XML del DOCX ufficiale):
+        //   Col 1  : Terr. N.            (9.97 mm) — vMerge su entrambe le righe header
+        //   Col 2  : Ristituito ultima   (17.93 mm) — vMerge su entrambe le righe header
+        //   Col 3+4: Assegnato a #1      (30.00 mm) — riga1: titolo gruppo; riga2: Ass.il + Rest.il
+        //   Col 5+6: Assegnato a #2      (30.05 mm)
+        //   Col 7+8: Assegnato a #3      (30.00 mm)
+        //   Col 9+10: Assegnato a #4     (30.05 mm)
+        //
+        // Ogni riga dati è composta da 2 sotto-righe fisiche:
+        //   sotto-riga A (alta): Terr.N.(vMerge), Rest.Ult.(vMerge), 4×nome-persona (gridSpan=2)
+        //   sotto-riga B (bassa): Terr.N.(empty), Rest.Ult.(empty), 4×(Ass.il | Rest.il)
+        // ============================================================
+        const datiOriginali = caricaDati();
+
+        // Legge anno selezionato: se chiamato da generaPDFCitta usa _annoFiltroTemp, altrimenti il select
+        const annoSelPDF = (typeof window._annoFiltroTemp !== 'undefined')
+            ? window._annoFiltroTemp
+            : document.getElementById('anno-servizio').value;
+        datiOriginali.annoServizio = annoSelPDF;
+        salvaDati(datiOriginali);
+
+        // Copia profonda con assegnazioni filtrate per anno
+        const { dal: dalPDF, al: alPDF } = annoSelPDF ? limiteAnnoServizio(annoSelPDF) : { dal: null, al: null };
+        const dati = {
+            ...datiOriginali,
+            territori: datiOriginali.territori.map(t => ({
+                ...t,
+                assegnazioni: dalPDF
+                    ? t.assegnazioni.filter(a => {
+                        if (!a.assegnato) return false;
+                        const d = new Date(a.assegnato);
+                        return d >= dalPDF && d <= alPDF;
+                    })
+                    : t.assegnazioni
+            }))
+        };
+
+        const { jsPDF } = window.jspdf;
+
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+        // --- Costanti pagina ---
+        const PW = 210;
+        const PH = 297;
+        const mL = 6.35;
+        const mR = 6.35;
+        const mT = 9.54;
+        const mB = 8.54;
+
+        // Larghezza utile tabella
+        const TW = PW - mL - mR;   // ~197.3 mm
+
+        // Larghezze colonne (proporzionali ai dxa del DOCX)
+        // Totale dxa = 709+1276+2134+2135+2134+2135 = 10523 dxa
+        const totalDxa = 10523;
+        const c = (dxa) => TW * dxa / totalDxa;
+
+        const colN  = c(709);   // Terr.N.
+        const colUR = c(1276);  // Restituito ultima
+        // 4 gruppi assegnazione; ogni gruppo = nome(gridSpan=2) / ass.il + rest.il
+        const grp = [c(2134), c(2135), c(2134), c(2135)];
+        // ogni sotto-cella data è metà del gruppo
+        const sub = grp.map(g => g / 2);
+
+        // --- Colori ---
+        const HDR_FILL = [217, 217, 217];
+        const WHITE    = [255, 255, 255];
+        const BLACK    = [0,   0,   0  ];
+        const DARK     = [64,  64,  64 ];
+        const GRAY     = [128, 128, 128];
+
+        // --- Altezze ---
+        const hH1 = 5.5;
+        const hH2 = 5.0;
+        const hHtot = hH1 + hH2;
+
+        const spaceForTitle = 14;
+        const spaceForFooter = 8;
+        const tableTop = mT + spaceForTitle;
+        const tableBottom = PH - mB - spaceForFooter;
+        const dataH = tableBottom - tableTop - hHtot;
+
+        const pageSize = 20;
+        const rowHtot = dataH / pageSize;
+        const rowH1 = rowHtot * 0.55;
+        const rowH2 = rowHtot * 0.45;
+
+        // ============================================================
+        //  HELPER: disegna rettangolo con bordi selettivi
+        // ============================================================
+        function drawCell(x, y, w, h, opts = {}) {
+            const { fill, top = true, bottom = true, left = true, right = true,
+                    thick = false } = opts;
+            if (fill) {
+                doc.setFillColor(...fill);
+                doc.rect(x, y, w, h, 'F');
+            }
+            const lw = thick ? 0.5 : 0.15;
+            doc.setLineWidth(lw);
+            doc.setDrawColor(0, 0, 0);
+            if (top)    doc.line(x,     y,     x + w, y    );
+            if (bottom) doc.line(x,     y + h, x + w, y + h);
+            if (left)   doc.line(x,     y,     x,     y + h);
+            if (right)  doc.line(x + w, y,     x + w, y + h);
+        }
+
+        // ============================================================
+        //  HELPER: testo centrato in cella
+        // ============================================================
+        function cellText(text, x, y, w, h, opts = {}) {
+            const { align = 'center', fontSize = 10, bold = false, color = DARK } = opts;
+            doc.setFontSize(fontSize);
+            doc.setFont('helvetica', bold ? 'bold' : 'normal');
+            doc.setTextColor(...color);
+            const cx = align === 'center' ? x + w / 2 : x + 1.2;
+            const cy = y + h / 2;
+            doc.text(text, cx, cy, { align, baseline: 'middle' });
+        }
+
+        // ============================================================
+        //  HELPER: x-offset del gruppo assegnazione c (0-3)
+        // ============================================================
+        function grpX(c) {
+            let x = mL + colN + colUR;
+            for (let i = 0; i < c; i++) x += grp[i];
+            return x;
+        }
+
+        // ============================================================
+        //  Paginazione — raggruppa per città, ogni città inizia su pagina nuova
+        // ============================================================
+        const cittaLabel = typeof _cittaFiltro !== 'undefined' ? _cittaFiltro : '';
+
+        // Ordina i territori per città poi per numero
+        const territoriOrdinati = [...dati.territori].sort((a, b) => {
+            const ca = (a.citta || '').toLowerCase();
+            const cb = (b.citta || '').toLowerCase();
+            if (ca < cb) return -1;
+            if (ca > cb) return 1;
+            const na = parseFloat(a.numero) || a.numero;
+            const nb = parseFloat(b.numero) || b.numero;
+            return na < nb ? -1 : na > nb ? 1 : 0;
+        });
+
+        // Raggruppa in blocchi: se PDF completo, rispetta il cambio città come salto pagina
+        const pages = [];
+        if (!cittaLabel) {
+            const cittaMap = {};
+            territoriOrdinati.forEach(t => {
+                const c = t.citta || '';
+                if (!cittaMap[c]) cittaMap[c] = [];
+                cittaMap[c].push(t);
+            });
+            Object.values(cittaMap).forEach(gruppo => {
+                for (let i = 0; i < gruppo.length; i += pageSize) {
+                    pages.push({ terrGroup: gruppo.slice(i, i + pageSize), citta: gruppo[0].citta || '' });
+                }
+            });
+        } else {
+            const filtrati = territoriOrdinati.filter(t => (t.citta || '') === cittaLabel);
+            for (let i = 0; i < filtrati.length; i += pageSize) {
+                pages.push({ terrGroup: filtrati.slice(i, i + pageSize), citta: cittaLabel });
+            }
+        }
+        if (pages.length === 0) pages.push({ terrGroup: [], citta: cittaLabel });
+
+        pages.forEach(({ terrGroup, citta: paginaCitta }, pageIdx) => {
+            if (pageIdx > 0) doc.addPage();
+            const cittaLabelPagina = paginaCitta;
+
+            // ---- TITOLO ----
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(...BLACK);
+            doc.text(
+                'REGISTRAZIONE DELLE ASSEGNAZIONI DEL TERRITORIO',
+                PW / 2, mT + 3.5,
+                { align: 'center', baseline: 'middle' }
+            );
+
+            // ---- ANNO DI SERVIZIO (sotto il titolo, sx) — dinamico per pagina ----
+            const tutteAss5 = terrGroup.flatMap(t =>
+                t ? [...t.assegnazioni].sort((a, b) => new Date(a.assegnato) - new Date(b.assegnato)).slice(-5) : []
+            );
+            const annoStr = tutteAss5.length > 0 ? calcolaAnnoPerTerritorio(tutteAss5) : (annoSelPDF || calcolaAnnoServizioCorrente());
+
+            doc.setFontSize(8);
+            doc.setFont('helvetica', 'bold');
+            const annoStrDisplay = annoStr.includes('/') ? annoStr.split('/').pop().split('–').pop().trim() : annoStr;
+doc.text('Anno di servizio: ' + annoStrDisplay, mL, mT + 10, { baseline: 'middle' });
+
+            // ---- CITTÀ (sotto il titolo, dx) ----
+            if (cittaLabelPagina) {
+                doc.text('Citt\u00e0: ' + cittaLabelPagina, PW - mR, mT + 10, { align: 'right', baseline: 'middle' });
+            }
+
+            // ================================================================
+            //  HEADER TABELLA — 2 righe fisiche
+            // ================================================================
+            const hy1 = tableTop;
+            const hy2 = tableTop + hH1;
+
+            // Terr. N. (vMerge)
+            drawCell(mL, hy1, colN, hHtot, { fill: HDR_FILL, thick: true });
+            cellText('Terr.', mL, hy1,             colN, hHtot * 0.5, { bold: true, fontSize: 8 });
+            cellText('N.',    mL, hy1 + hHtot*0.5, colN, hHtot * 0.5, { bold: true, fontSize: 8 });
+
+            // Restituito ultima (vMerge)
+            drawCell(mL + colN, hy1, colUR, hHtot, { fill: HDR_FILL, thick: true });
+            const urLines = ["Restituito", "l\u2019ultima", "volta il*"];
+            const urLineH = hHtot / 3;
+            urLines.forEach((line, i) => {
+                cellText(line, mL + colN, hy1 + i * urLineH, colUR, urLineH, { bold: true, fontSize: 8 });
+            });
+
+            // 4 gruppi: riga 1 = "Assegnato a" (span completo)
+            for (let c = 0; c < 4; c++) {
+                const gx = grpX(c);
+                const gw = grp[c];
+                drawCell(gx, hy1, gw, hH1, { fill: HDR_FILL, thick: true });
+                cellText('Assegnato a', gx, hy1, gw, hH1, { bold: true, fontSize: 8 });
+            }
+
+            // Riga 2 header: Ass.il | Rest.il per ogni gruppo
+            for (let c = 0; c < 4; c++) {
+                const gx = grpX(c);
+                const sw = sub[c];
+                drawCell(gx,      hy2, sw, hH2, { fill: HDR_FILL, thick: true });
+                cellText('Assegnato il', gx, hy2, sw, hH2, { bold: true, fontSize: 8 });
+                drawCell(gx + sw, hy2, sw, hH2, { fill: HDR_FILL, thick: true });
+                cellText('Restituito il', gx + sw, hy2, sw, hH2, { bold: true, fontSize: 8 });
+            }
+
+            // ================================================================
+            //  RIGHE DATI — 20 territori, ognuno su 2 sotto-righe
+            // ================================================================
+            for (let rowIdx = 0; rowIdx < pageSize; rowIdx++) {
+                const t = terrGroup[rowIdx] || null;
+                const ya = tableTop + hHtot + rowIdx * rowHtot;
+                const yb = ya + rowH1;
+
+                // Prendi le ultime 5 assegnazioni, ordinate dalla più vecchia alla più recente
+                const tutteOrdinate = t ? [...t.assegnazioni].sort((a, b) => new Date(a.assegnato) - new Date(b.assegnato)) : [];
+                const ass = tutteOrdinate.slice(-5);
+
+                // --- SOTTO-RIGA A: Terr.N. + Ult.Rest. (vMerge) + nomi persona ---
+
+                // Terr. N. (occupa entrambe le sotto-righe)
+                drawCell(mL, ya, colN, rowHtot, {});
+                if (t) {
+                    doc.setFontSize(12);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setTextColor(...BLACK);
+                    doc.text(String(t.numero), mL + colN / 2, ya + rowHtot / 2,
+                             { align: 'center', baseline: 'middle' });
+                }
+
+                // Restituito ultima: data di restituzione della più vecchia tra le 5 selezionate
+                drawCell(mL + colN, ya, colUR, rowHtot, {});
+                if (t && ass.length > 0) {
+                    const dataPiuVecchia = ass[0].restituito || '';
+                    if (dataPiuVecchia) {
+                        cellText(formatDataPDF(dataPiuVecchia),
+                                 mL + colN, ya, colUR, rowHtot,
+                                 { fontSize: 10, color: [0, 0, 0], align: 'center' });
+                    }
+                }
+
+                // 4 gruppi: sotto-riga A = nome persona — ass[1..4] (ass[0] è nella colonna "ult. rest.")
+                for (let c = 0; c < 4; c++) {
+                    const gx = grpX(c);
+                    const gw = grp[c];
+                    const a  = ass[c + 1] || {};
+                    drawCell(gx, ya, gw, rowH1, {});
+                    if (a.persona) {
+                        const txt = truncTxt(a.persona, gw - 2.5, doc);
+                        doc.setFontSize(10);
+                        doc.setFont('helvetica', 'normal');
+                        doc.setTextColor(...BLACK);
+                        doc.text(txt, gx + 1.2, ya + rowH1 / 2, { baseline: 'middle' });
+                    }
+                }
+
+                // --- SOTTO-RIGA B: date ---
+                for (let c = 0; c < 4; c++) {
+                    const gx = grpX(c);
+                    const sw = sub[c];
+                    const a  = ass[c + 1] || {};
+
+                    // Assegnato il
+                    drawCell(gx,      yb, sw, rowH2, {});
+                    if (a.assegnato) {
+                        cellText(formatDataPDF(a.assegnato), gx, yb, sw, rowH2,
+                                 { fontSize: 10, color: BLACK });
+                    }
+                    // Restituito il
+                    drawCell(gx + sw, yb, sw, rowH2, {});
+                    if (a.restituito) {
+                        cellText(formatDataPDF(a.restituito), gx + sw, yb, sw, rowH2,
+                                 { fontSize: 10, color: BLACK });
+                    }
+                }
+            }
+
+            // ---- NOTA A PIÈ DI PAGINA ----
+            doc.setFontSize(6);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(...GRAY);
+            doc.text(
+                "*Quando si inizia un nuovo foglio, registrare in questa colonna l\u2019ultima data in cui \u00e8 stato restituito ogni territorio.",
+                mL, tableBottom + 4
+            );
+            doc.setFont('helvetica', 'bold');
+            doc.text('S-13-I  1/22', PW - mR, tableBottom + 4, { align: 'right' });
+        });
+
+        const nomeFile = cittaLabel
+            ? 'S-13-I_' + cittaLabel.replace(/\s+/g, '_') + '.pdf'
+            : 'S-13-I_Registro_Territori.pdf';
+        doc.save(nomeFile);
+    }
+
+    function generaPDFCitta() {
+        const dati = caricaDati();
+        const citta = [...new Set(dati.territori.map(t => t.citta || '').filter(Boolean))].sort();
+        if (citta.length === 0) {
+            alert('Nessun territorio ha una città assegnata.');
+            return;
+        }
+        const lista = citta.map((c, i) => (i + 1) + '. ' + c).join('\n');
+        const scelta = prompt('Scegli la città (inserisci il numero):\n' + lista);
+        if (!scelta) return;
+        const idx = parseInt(scelta) - 1;
+        if (isNaN(idx) || idx < 0 || idx >= citta.length) {
+            alert('Scelta non valida.');
+            return;
+        }
+        const cittaScelta = citta[idx];
+
+        // Calcola gli anni da mostrare basandosi SOLO sui territori della città scelta
+        // (logica speculare a calcolaAnniDaMostrare ma limitata alla città)
+        const territoriCitta = dati.territori.filter(t => (t.citta || '') === cittaScelta);
+
+        const oggi = new Date();
+        const meseOggi = oggi.getMonth();
+        const annoOggi = oggi.getFullYear();
+        const inizioAnnoCorrente = meseOggi >= 8 ? annoOggi : annoOggi - 1;
+        const settembreCorrente = new Date(inizioAnnoCorrente, 8, 1);
+        const annoCorrente = calcolaAnnoServizioCorrente();
+
+        const anniCittaSet = new Set();
+        anniCittaSet.add(annoCorrente);
+
+        territoriCitta.forEach(t => {
+            const tutte = [...t.assegnazioni].sort((a, b) => new Date(a.assegnato) - new Date(b.assegnato));
+            const ultime5 = tutte.slice(-5);
+            ultime5.forEach(a => {
+                if (a.assegnato) {
+                    const d = new Date(a.assegnato);
+                    const m = d.getMonth();
+                    const y = d.getFullYear();
+                    const inizio = m >= 8 ? y : y - 1;
+                    anniCittaSet.add(inizio + '/' + (inizio + 1));
+                }
+            });
+            // Aggiungi anche tutti gli anni storici della città
+            t.assegnazioni.forEach(a => {
+                if (a.assegnato) {
+                    const d = new Date(a.assegnato);
+                    const m = d.getMonth();
+                    const y = d.getFullYear();
+                    const inizio = m >= 8 ? y : y - 1;
+                    anniCittaSet.add(inizio + '/' + (inizio + 1));
+                }
+            });
+        });
+
+        const anniCitta = [...anniCittaSet].sort((a, b) => parseInt(b.split('/')[0]) - parseInt(a.split('/')[0]));
+
+        // Se c'è più di un anno disponibile, chiedi quale usare
+        let annoScelto = annoCorrente;
+        if (anniCitta.length > 1) {
+            const listaAnni = anniCitta.map((a, i) => (i + 1) + '. ' + a).join('\n');
+            const sceltaAnno = prompt('Anno di servizio per il PDF di ' + cittaScelta + ':\n' + listaAnni + '\n\n(Premi Invio per usare l\'anno corrente: ' + annoCorrente + ')');
+            if (sceltaAnno === null) return; // annullato
+            if (sceltaAnno.trim() !== '') {
+                const idxAnno = parseInt(sceltaAnno) - 1;
+                if (!isNaN(idxAnno) && idxAnno >= 0 && idxAnno < anniCitta.length) {
+                    annoScelto = anniCitta[idxAnno];
+                }
+            }
+        }
+
+        // Imposta temporaneamente il filtro città e l'anno selezionato per il PDF
+        window._cittaFiltro = cittaScelta;
+        window._annoFiltroTemp = annoScelto;
+        generaPDF();
+        delete window._cittaFiltro;
+        delete window._annoFiltroTemp;
+    }
+
+    // Tronca testo a larghezza max per PDF
+    function truncTxt(txt, maxW, doc) {
+        if (!txt) return '';
+        while (txt.length > 1 && doc.getTextWidth(txt) > maxW) {
+            txt = txt.slice(0, -1);
+        }
+        return txt;
+    }
+
+    // ============================================================
+    //  BACKUP
+    // ============================================================
+    function esportaBackup() {
+        const dati = caricaDati();
+        const blob = new Blob([JSON.stringify(dati, null, 2)], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'backup_territori_' + todayISO() + '.json';
+        a.click();
+    }
+
+    function importaBackup() {
+        document.getElementById('import-file').click();
+    }
+
+    function leggiBackup(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            try {
+                const dati = JSON.parse(ev.target.result);
+                if (!Array.isArray(dati.territori)) throw new Error();
+                if (!confirm('Importare il backup? I dati attuali verranno sostituiti.')) return;
+                salvaDati(dati);
+                alert('Backup importato con successo!');
+            } catch(err) { alert('File non valido.'); }
+        };
+        reader.readAsText(file);
+        e.target.value = '';
+    }
+
+    function eliminaTutti() {
+        if (!confirm('Eliminare TUTTI i dati? Questa operazione è irreversibile.')) return;
+        localStorage.removeItem(STORAGE_KEY);
+        alert('Dati eliminati.');
+    }
+
+    // ============================================================
+    //  UTILS
+    // ============================================================
+    function escHtml(s) {
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function formatData(iso) {
+        if (!iso) return '';
+        const [y, m, d] = iso.split('-');
+        return d + '/' + m + '/' + y;
+    }
+
+    function formatDataPDF(iso) {
+        if (!iso) return '';
+        const [y, m, d] = iso.split('-');
+        return d + '/' + m + '/' + y.slice(2);
+    }
+
+    function todayISO() {
+        return new Date().toISOString().split('T')[0];
+    }
+
+    </script>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Service Worker registrato!', reg))
+                    .catch(err => console.log('Errore SW:', err));
+            });
+        }
+window.addEventListener('DOMContentLoaded', () => {
+    // renderDashboard viene chiamato da onAuthStateChanged dopo il login
+    // nessuna inizializzazione anticipata necessaria
+});
+    </script>
+
+</body>
+</html>
