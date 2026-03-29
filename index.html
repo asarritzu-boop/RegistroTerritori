@@ -2686,9 +2686,30 @@ doc.text('Anno di servizio: ' + annoStrDisplay, mL, mT + 10, { baseline: 'middle
                 const ya = tableTop + hHtot + rowIdx * rowHtot;
                 const yb = ya + rowH1;
 
-                // Prendi le ultime 5 assegnazioni, ordinate dalla più vecchia alla più recente
-                const tutteOrdinate = t ? [...t.assegnazioni].sort((a, b) => new Date(a.assegnato) - new Date(b.assegnato)) : [];
-                const ass = tutteOrdinate.slice(-5);
+                // Prendi le assegnazioni dell'anno selezionato; se meno di 5, completa con le più recenti degli anni precedenti
+let ass = [];
+if (t) {
+    const assAnnoOrd = [...t.assegnazioni].sort((a, b) => new Date(a.assegnato) - new Date(b.assegnato));
+    ass = assAnnoOrd.slice(-5);
+
+    if (ass.length < 5) {
+        const tOrig = datiOriginali.territori.find(x => x.id === t.id);
+        if (tOrig) {
+            const idAssIncluse = new Set(ass.map(a => a.assegnato + '|' + (a.persona || '')));
+            const assPrec = [...tOrig.assegnazioni]
+                .filter(a => {
+                    if (!a.assegnato) return false;
+                    const key = a.assegnato + '|' + (a.persona || '');
+                    if (idAssIncluse.has(key)) return false;
+                    if (dalPDF && new Date(a.assegnato) >= dalPDF) return false;
+                    return true;
+                })
+                .sort((a, b) => new Date(a.assegnato) - new Date(b.assegnato));
+            const mancanti = 5 - ass.length;
+            ass = [...assPrec.slice(-mancanti), ...ass];
+        }
+    }
+}
 
                 // --- SOTTO-RIGA A: Terr.N. + Ult.Rest. (vMerge) + nomi persona ---
 
@@ -2705,7 +2726,7 @@ doc.text('Anno di servizio: ' + annoStrDisplay, mL, mT + 10, { baseline: 'middle
                 // Restituito ultima: data di restituzione della più vecchia tra le 5 selezionate
                 drawCell(mL + colN, ya, colUR, rowHtot, {});
                 if (t && ass.length > 0) {
-                    const dataPiuVecchia = ass[0].restituito || '';
+                    const dataPiuVecchia = t.ultimaRestituzione || '';
                     if (dataPiuVecchia) {
                         cellText(formatDataPDF(dataPiuVecchia),
                                  mL + colN, ya, colUR, rowHtot,
@@ -2717,7 +2738,7 @@ doc.text('Anno di servizio: ' + annoStrDisplay, mL, mT + 10, { baseline: 'middle
                 for (let c = 0; c < 4; c++) {
                     const gx = grpX(c);
                     const gw = grp[c];
-                    const a  = ass[c + 1] || {};
+                    const a  = ass[c] || {};
                     drawCell(gx, ya, gw, rowH1, {});
                     if (a.persona) {
                         const txt = truncTxt(a.persona, gw - 2.5, doc);
@@ -2732,8 +2753,7 @@ doc.text('Anno di servizio: ' + annoStrDisplay, mL, mT + 10, { baseline: 'middle
                 for (let c = 0; c < 4; c++) {
                     const gx = grpX(c);
                     const sw = sub[c];
-                    const a  = ass[c + 1] || {};
-
+                    const a  = ass[c] || {};
                     // Assegnato il
                     drawCell(gx,      yb, sw, rowH2, {});
                     if (a.assegnato) {
