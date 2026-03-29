@@ -1882,16 +1882,16 @@ function renderDashboard() {
         contenuto.innerHTML = cittaKeys.map(citta => {
             const gruppo = cittaMap[citta];
             const label = citta || 'Senza città';
-            const sectionId = 'citta-section-' + (citta || '__nessuna__').replace(/\s+/g, '-');
-            const cittaEsc = escHtml(citta);
+            const sectionId = 'citta-section-' + (citta || '__nessuna__').replace(/[^a-zA-Z0-9]/g, '_');
+            
             const cards = gruppo.map((t, idx) => renderTerrCard(t, idx + 1, isAnnoCorrente, testoFiltro ? testoMatchMap[t.id] : null)).join('');
             return `
             <div class="citta-section">
                 <div class="citta-section-header collapsed" onclick="toggleCittaSection('${sectionId}', this)">
                     <span>🏙️ ${escHtml(label)} <span class="citta-count">(${gruppo.length} terr.)</span></span>
                     <span style="display:flex;gap:6px;align-items:center;">
-                        <button class="btn-icon" onclick="event.stopPropagation();rinominaCitta('${cittaEsc}')">✏️</button>
-                        <button class="btn-icon del" onclick="event.stopPropagation();eliminaCitta('${cittaEsc}')">🗑</button>
+                        <button class="btn-icon" data-citta="${escHtml(citta)}" onclick="event.stopPropagation();rinominaCitta(this.dataset.citta)">✏️</button>
+                        <button class="btn-icon del" data-citta="${escHtml(citta)}" onclick="event.stopPropagation();eliminaCitta(this.dataset.citta)">🗑</button>
                         <span class="citta-toggle">▼</span>
                     </span>
                 </div>
