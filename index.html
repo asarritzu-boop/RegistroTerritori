@@ -3057,13 +3057,14 @@ window.addEventListener('DOMContentLoaded', () => {
       const dati = JSON.parse(localStorage.getItem('registroTerritori_v1') || '{}');
 
       const res = await fetch("https://claude-proxy-one.vercel.app/api/claude", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ domanda, dati })
-      });
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ domanda, dati })
+});
 
-      const json = await res.json();
-      risposta.textContent = json.risposta;
+risposta.textContent = 'Status: ' + res.status;
+const json = await res.json();
+risposta.textContent = json.risposta || JSON.stringify(json);q
     } catch (err) {
       risposta.textContent = json.risposta || JSON.stringify(json);
     }
