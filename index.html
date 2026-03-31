@@ -3065,7 +3065,7 @@ window.addEventListener('DOMContentLoaded', () => {
       const json = await res.json();
       risposta.textContent = json.risposta;
     } catch (err) {
-      risposta.textContent = '❌ Errore di connessione. Riprova.';
+      risposta.textContent = '❌ ' + err.message;a
     }
   }
 </script>
