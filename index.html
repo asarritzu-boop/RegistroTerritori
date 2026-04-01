@@ -3029,7 +3029,7 @@ window.addEventListener('DOMContentLoaded', () => {
 <button id="claude-fab" onclick="toggleClaudePanel()" title="Chiedi a Claude">🤖</button>
 
 <div id="claude-panel">
-  <div id="claude-panel-header">🤖 Chiedi a Gemini</div> <div id="claude-risposta">Ciao! Chiedimi qualcosa sui tuoi territori...</div>
+  <div id="claude-panel-header">🤖 Chiedi alla I.A.a</div> <div id="claude-risposta">Ciao! Chiedimi qualcosa sui tuoi territori...</div>
   <div id="claude-input-area">
     <input id="claude-input" type="text" placeholder="Es: chi non restituisce da 6 mesi?" 
       onkeydown="if(event.key==='Enter') inviaAGemini()" /> <button id="claude-send" onclick="inviaAGemini()">➤</button> </div>
@@ -3062,7 +3062,11 @@ window.addEventListener('DOMContentLoaded', () => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       // Inviamo 'domanda' e 'dati' (il tuo chat.js li riconoscerà automaticamente)
-      body: JSON.stringify({ domanda, dati })
+      body: JSON.stringify({
+  domanda,
+  dati,
+  systemPrompt: `Sei un assistente integrato nell'app "Registro Territori" per la gestione dei territori di predicazione di una congregazione dei Testimoni di Geova. I dati che ricevi contengono l'elenco completo dei territori con assegnazioni e restituzioni. Ogni territorio ha: numero, nome, città, anno di servizio, e uno storico assegnazioni (persona, data assegnazione, data restituzione). Rispondi SOLO in base a questi dati. Se la domanda non riguarda i territori, rispondì che sei specializzato solo in questo ambito.`
+})
     });
 
     if (!res.ok) throw new Error('Errore server: ' + res.status);
