@@ -1604,10 +1604,22 @@ function renderDashboard() {
         }
 
         // Aggiungi a Display 3: Non è in corso, E l'ultima restituzione risale a > 6 mesi fa
-        if (!isInCorso && maxRestituito && maxRestituito <= seiMesiFa) {
-            const mesiFermi = Math.floor((oggi - maxRestituito) / (1000 * 60 * 60 * 24 * 30));
-            disp3.push({ terr: t, dataRest: maxRestituito, mesi: mesiFermi });
+        const aperta = t.assegnazioni.find(a => !a.restituito && a.assegnato);
+if (!aperta) {
+    let lastRest = t.ultimaRestituzione ? new Date(t.ultimaRestituzione) : null;
+    t.assegnazioni.forEach(a => {
+        if (a.restituito) {
+            const d = new Date(a.restituito);
+            if (!lastRest || d > lastRest) lastRest = d;
         }
+    });
+    const mesi = lastRest
+        ? (oggi - lastRest) / (1000 * 60 * 60 * 24 * 30)
+        : Infinity;
+    if (mesi > 6) {
+        disp3.push({ terr: t, dataRest: lastRest, mesi: Math.floor(mesi) });
+    }
+}
     });
 
     // Ordinamenti richiesti
