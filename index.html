@@ -1619,10 +1619,24 @@ if (!apertaAnno) {
             }
         });
     }
-    const mesi = lastRest
-        ? (oggi - lastRest) / (1000 * 60 * 60 * 24 * 30)
+    // Calcola mesi reali usando tutte le assegnazioni come fallback
+let mesiReali;
+if (lastRest) {
+    mesiReali = (oggi - lastRest) / (1000 * 60 * 60 * 24 * 30);
+} else {
+    let fallbackRest = null;
+    t.assegnazioni.forEach(a => {
+        if (a.restituito) {
+            const d = new Date(a.restituito);
+            if (!fallbackRest || d > fallbackRest) fallbackRest = d;
+        }
+    });
+    if (!fallbackRest && t.ultimaRestituzione) fallbackRest = new Date(t.ultimaRestituzione);
+    mesiReali = fallbackRest
+        ? (oggi - fallbackRest) / (1000 * 60 * 60 * 24 * 30)
         : Infinity;
-    if (mesi > 6) {
+}
+if (mesiReali > 6) {
         let mesiLabel;
 if (!isFinite(mesi)) {
     let fallback = null;
@@ -1637,7 +1651,7 @@ if (!isFinite(mesi)) {
         ? Math.floor((oggi - fallback) / (1000 * 60 * 60 * 24 * 30)) + ' mesi'
         : '> 1 anno';
 } else {
-    mesiLabel = Math.floor(mesi) + ' mesi';
+    mesiLabel = Math.floor(mesiReali) + ' mesi';
 }
 disp3.push({ terr: t, dataRest: lastRest, mesiLabel });
         }
