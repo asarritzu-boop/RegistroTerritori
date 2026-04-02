@@ -1606,13 +1606,17 @@ function renderDashboard() {
         // Aggiungi a Display 3: Non è in corso, E l'ultima restituzione risale a > 6 mesi fa
         const aperta = t.assegnazioni.find(a => !a.restituito && a.assegnato);
 if (!aperta) {
-    let lastRest = t.ultimaRestituzione ? new Date(t.ultimaRestituzione) : null;
-    t.assegnazioni.forEach(a => {
-        if (a.restituito) {
-            const d = new Date(a.restituito);
+    let lastRest = null;
+t.assegnazioni.forEach(a => {
+    if (a.restituito) {
+        const d = new Date(a.restituito);
+        const dAss = a.assegnato ? new Date(a.assegnato) : null;
+        if (dAss && dAss >= new Date(oggi.getFullYear() - (oggi.getMonth() >= 8 ? 0 : 1), 8, 1)) {
             if (!lastRest || d > lastRest) lastRest = d;
         }
-    });
+    }
+});
+if (!lastRest) lastRest = t.ultimaRestituzione ? new Date(t.ultimaRestituzione) : null;
     const mesi = lastRest
         ? (oggi - lastRest) / (1000 * 60 * 60 * 24 * 30)
         : Infinity;
