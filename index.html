@@ -1625,7 +1625,14 @@ if (!apertaAnno) {
     if (mesi > 6) {
         let mesiLabel;
 if (!isFinite(mesi)) {
-    const fallback = t.ultimaRestituzione ? new Date(t.ultimaRestituzione) : null;
+    let fallback = null;
+    t.assegnazioni.forEach(a => {
+        if (a.restituito) {
+            const d = new Date(a.restituito);
+            if (!fallback || d > fallback) fallback = d;
+        }
+    });
+    if (!fallback && t.ultimaRestituzione) fallback = new Date(t.ultimaRestituzione);
     mesiLabel = fallback
         ? Math.floor((oggi - fallback) / (1000 * 60 * 60 * 24 * 30)) + ' mesi'
         : '> 1 anno';
@@ -1799,20 +1806,21 @@ disp3.push({ terr: t, dataRest: lastRest, mesiLabel });
 
         // Helper: mesi dall'ultima restituzione (territorio attualmente libero)
         function mesiLibero(t) {
-            // Cerca se ha un'assegnazione aperta (non restituita)
-            const aperta = t.assegnazioni.find(a => !a.restituito && a.assegnato);
-            if (aperta) return 0; // è in corso, non è "libero"
-            if (t.assegnazioni.length === 0) return Infinity;
-            // Data dell'ultima restituzione
-            let lastRest = null;
-            t.assegnazioni.forEach(a => {
-                if (a.restituito) {
-                    const d = new Date(a.restituito);
-                    if (!lastRest || d > lastRest) lastRest = d;
-                }
-            });
-            if (!lastRest) return Infinity;
-            return (oggi - lastRest) / (1000 * 60 * 60 * 24 * 30);
+        function mesiLibero(t) {
+    const aperta = t.assegnazioni.find(a => !a.restituito && a.assegnato);
+    if (aperta) return 0;
+    // Cerca ultima restituzione in TUTTE le assegnazioni (tutti gli anni)
+    const tutteAss = dati.territori.find(x => x.id === t.id)?.assegnazioni || [];
+    let lastRest = null;
+    tutteAss.forEach(a => {
+        if (a.restituito) {
+            const d = new Date(a.restituito);
+            if (!lastRest || d > lastRest) lastRest = d;
+        }
+    });
+    if (!lastRest && t.ultimaRestituzione) lastRest = new Date(t.ultimaRestituzione);
+    if (!lastRest) return Infinity;
+    return (oggi - lastRest) / (1000 * 60 * 60 * 24 * 30);
         }
 
         // --- Applica filtro testo (cerca in nome, numero, città, nomi assegnatari) ---
