@@ -1789,14 +1789,17 @@ disp3.push({ terr: t, dataRest: lastRest, mesiLabel });
         let territoriAnno = dati.territori.map(t => {
     const assFiltered = dal
         ? t.assegnazioni.filter(a => {
-            if (!a.assegnato) return false;
-            const d = new Date(a.assegnato);
-            // Includi se ricade nell'anno selezionato
-            if (d >= dal && d <= al) return true;
-            // Includi anche se è aperta (non restituita) e appartiene a un anno precedente
-            if (!a.restituito && d < dal) return true;
-            return false;
-        })
+    if (!a.assegnato) return false;
+    const dAss = new Date(a.assegnato);
+    const dRest = a.restituito ? new Date(a.restituito) : null;
+    // Includi se assegnato nell'anno selezionato
+    if (dAss >= dal && dAss <= al) return true;
+    // Includi se restituito nell'anno selezionato (anche se assegnato prima)
+    if (dRest && dRest >= dal && dRest <= al) return true;
+    // Includi se aperta e assegnata prima dell'anno (ancora in corso)
+    if (!a.restituito && dAss < dal) return true;
+    return false;
+})
         : t.assegnazioni;
     return { ...t, assegnazioni: assFiltered };
 });
