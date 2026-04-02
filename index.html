@@ -1805,7 +1805,7 @@ disp3.push({ terr: t, dataRest: lastRest, mesiLabel });
         }
 
         // Helper: mesi dall'ultima restituzione (territorio attualmente libero)
-        function mesiLibero(t) {
+        
         function mesiLibero(t) {
     const aperta = t.assegnazioni.find(a => !a.restituito && a.assegnato);
     if (aperta) return 0;
