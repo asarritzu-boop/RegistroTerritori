@@ -1623,9 +1623,16 @@ if (!apertaAnno) {
         ? (oggi - lastRest) / (1000 * 60 * 60 * 24 * 30)
         : Infinity;
     if (mesi > 6) {
-        disp3.push({ terr: t, dataRest: lastRest, mesi: Math.floor(mesi) });
-    }
+        let mesiLabel;
+if (!isFinite(mesi)) {
+    const fallback = t.ultimaRestituzione ? new Date(t.ultimaRestituzione) : null;
+    mesiLabel = fallback
+        ? Math.floor((oggi - fallback) / (1000 * 60 * 60 * 24 * 30)) + ' mesi'
+        : '> 1 anno';
+} else {
+    mesiLabel = Math.floor(mesi) + ' mesi';
 }
+disp3.push({ terr: t, dataRest: lastRest, mesiLabel });
     });
 
     // Ordinamenti richiesti
@@ -1668,7 +1675,7 @@ if (!apertaAnno) {
             ${disp3.map(item => `
                 <li>
                     <span>N. <strong>${item.terr.numero}</strong>${item.terr.citta ? ` <span style="opacity:0.6;font-size:0.75rem;">[${escHtml(item.terr.citta)}]</span>` : ''}${item.terr.nome ? ` <span style="opacity:0.6;font-size:0.75rem;">(${escHtml(item.terr.nome)})</span>` : ''}</span>
-                    <span class="text-warning">Fermo da ${item.mesi} mesi</span>
+                    <span class="text-warning">Fermo da ${item.mesiLabel}</span>
                 </li>
             `).join('')}
         </ul>` : '<p style="font-size:0.85rem; margin:0;">Tutti i territori liberi sono stati lavorati di recente.</p>'}
